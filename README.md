@@ -13,3 +13,7 @@ Avoid branches if possible. Instead try to make each commit coherent on it's own
 ## Commits
 
 Concisely summarize the value add in terms I'll appreciate later. My commits should tell a compelling story of how a large vision of interconnected pieces of software come together in a well executed vision.
+
+## Secrets
+
+Since this repo will NEVER be shared with other people. It is ok to track secrets like admin passwords to equipment, etc. This said, secrets should be clearly marked as such or centralized in a single place in a given project so if the project was published or shared it would be straight forward to rotate the secrets and externalize them.
