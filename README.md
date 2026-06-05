@@ -14,6 +14,8 @@ Avoid branches if possible. Instead try to make each commit coherent on it's own
 
 Concisely summarize the value add in terms I'll appreciate later. My commits should tell a compelling story of how a large vision of interconnected pieces of software come together in a well executed vision.
 
+Format is typically: `<repo area>: succinct description`. Detailed body text is not typically needed.
+
 ## Uncommitted stuff
 
 Don't commit something unless it contributes to the narrative/objectives of SPNC; if the resulting commit message doesn't continue telling the story, don't commit it, maybe put it somewhere else. Or wait for it to actually have some concrete long-term value and then commit it.
