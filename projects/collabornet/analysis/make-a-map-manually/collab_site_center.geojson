@@ -1,0 +1,14 @@
+{
+  "type": "FeatureCollection",
+  "features": [{
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [-93.2826836, 44.9383106]
+    },
+    "properties": {
+      "label": "collab_site.center_lat_lng",
+      "name": "collab_site_center"
+    }
+  }]
+}
