@@ -97,21 +97,9 @@ Assumes passwordless `sudo` for that user on the Pi (Raspberry Pi Imager sets th
    ```
    → one node (named for the Pi's hostname, e.g. `earth`) in `Ready` state.
 
-# Notes
+1. Can connect to cluster using the TailScale DNS
+  - `vim ~/.kube/$JK3S_CLUSTER_NAME.yaml`
+  - Edit `server: https://x.y.z.a:6443` to be `server: https://TBD.TBD.ts.net:6443`
+  - Run `kubectl get pods -A`; expect to see them
 
-- **The SAN name is the hostname, not the cluster.** Tailscale names each device by its hostname,
-  so the Pi is `earth.<tailnet>.ts.net` — not `gaia...`. That's deliberate: it scales when you add
-  more nodes (`fire`, `wind`), each its own tailnet device, all in cluster `gaia`. The script
-  derives the SAN as `<pi-hostname>.$JK3S_TAILNET.ts.net`; set `JK3S_TAILSCALE_DNS` to override if
-  you ever rename the Tailscale device.
-- **Going remote later:** the cert already carries the Tailscale name, so to deploy off-LAN just
-  point the kubeconfig `server:` at `https://earth.<tailnet>.ts.net:6443` — no cert regeneration.
-  On-LAN it stays the faster `JK3S_HOST_IP`.
-- **`memory` missing from `cgroup.controllers` after reboot:** known Pi 5 / Bookworm issue — the
-  firmware DTB can re-disable the memory cgroup despite the cmdline
-  ([k3s-io/k3s#9524](https://github.com/k3s-io/k3s/issues/9524)).
-- **Why the trim:** the Cloudflare Tunnel (next project, `helmfile-base`) is the only ingress, so
-  traefik + servicelb aren't needed; local-path stays as the default StorageClass so PVCs land on
-  the NVMe.
-- **Naming:** the k3s node inherits the Pi's hostname (`earth`); the kubeconfig context is
-  `$JK3S_CLUSTER_NAME` (`gaia`). `helmfile-base` deploys against that context.
+Typically, you leave this edit in place and default using TailScale DNS for remote access.
