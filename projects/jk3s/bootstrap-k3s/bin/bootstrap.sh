@@ -11,6 +11,7 @@
 #   JK3S_TAILNET        tailnet name (part before .ts.net) e.g. tail1a2b3
 #   JK3S_TAILSCALE_DNS  (optional) the Pi MagicDNS name, added to the API cert as a SAN.
 #                       default: <pi-hostname>.$JK3S_TAILNET.ts.net (e.g. earth.tail1a2b3.ts.net)
+#   JK3S_K3S_VERSION    (optional) pin an exact k3s version (e.g. v1.36.2+k3s1); default: latest stable
 #   JK3S_KUBECONFIG_OUT (optional) where to write the kubeconfig
 #                       default: ~/.kube/$JK3S_CLUSTER_NAME.yaml
 #
@@ -80,13 +81,18 @@ else
   exit 0
 fi
 
-echo "==> install k3s (trimmed: no traefik, no servicelb; local-path kept for PVCs)"
+if [[ -n "${JK3S_K3S_VERSION:-}" ]]; then
+  echo "==> install k3s (pinned ${JK3S_K3S_VERSION}; trimmed: no traefik, no servicelb; local-path kept)"
+else
+  echo "==> install k3s (latest stable; trimmed: no traefik, no servicelb; local-path kept)"
+fi
 if remote 'command -v k3s >/dev/null 2>&1'; then
   echo "    k3s already installed, skipping installer"
 else
   # node name defaults to the Pi hostname (e.g. earth). Both SANs make the API cert valid for the
   # LAN IP (now) and the Tailscale name (remote, later). The installer sudo's the privileged parts.
-  remote "curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC='--disable traefik --disable servicelb --write-kubeconfig-mode 644 --tls-san ${JK3S_HOST_IP} --tls-san ${JK3S_TAILSCALE_DNS}' sh -"
+  # JK3S_K3S_VERSION pins an exact release; empty => latest stable channel.
+  remote "curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION='${JK3S_K3S_VERSION:-}' INSTALL_K3S_EXEC='--disable traefik --disable servicelb --write-kubeconfig-mode 644 --tls-san ${JK3S_HOST_IP} --tls-san ${JK3S_TAILSCALE_DNS}' sh -"
 fi
 
 echo "==> wait for the node to be Ready"
@@ -114,4 +120,4 @@ if command -v kubectl >/dev/null 2>&1; then
 else
   echo "(install kubectl, then:  KUBECONFIG=$OUT kubectl get nodes)"
 fi
-echo "Next:    helmfile-base deploys cloudflared + hello-world against context ${JK3S_CLUSTER_NAME}."
+echo "Next:    helmfile-base to deploy cloudflared + hello-world against context ${JK3S_CLUSTER_NAME}."

@@ -22,6 +22,8 @@ steps here.
 
 ## Configure your shell
 
+Most of the commands assume you are executing commands from your workstation/laptop (not RPi)
+
 1. Run `cd bootstrap-k3s`
 1. Set these in your shell (example values, be sure to sub for each TBD or override as needed)
       ```
@@ -30,8 +32,19 @@ steps here.
       export JK3S_SSH_KEY_PATH=~/.ssh/id_rsa  # private key that logs into the Pi
       export JK3S_CLUSTER_NAME=gaia           # k3s cluster / kube-context name
       export JK3S_TAILNET=TBD                 # your tailnet name (part before .ts.net, like tailabc123)
+      # Optional — pin an exact k3s version for reproducible/identical clusters (unset => latest stable):
+      # export JK3S_K3S_VERSION=v1.36.2+k3s1
       ```
-3. Validate RPi connectivity: `ssh -i "$JK3S_SSH_KEY_PATH" "$JK3S_USERNAME@$JK3S_HOST_IP"  uptime`
+
+   Find a version to pin on the [k3s releases page](https://github.com/k3s-io/k3s/releases) — copy a
+   tag like `v1.36.2+k3s1`. Or print what *stable* currently resolves to (the version is the last path
+   segment of the URL):
+   ```
+   curl -s https://update.k3s.io/v1-release/channels/stable -o /dev/null -w '%{redirect_url}\n'
+   ```
+   Leave `JK3S_K3S_VERSION` unset to take latest stable at install time (fine for one cluster); pin it
+   so a second box comes up on the exact same version.
+1. Validate RPi connectivity: `ssh -i "$JK3S_SSH_KEY_PATH" "$JK3S_USERNAME@$JK3S_HOST_IP"  uptime`
 
 ## K3s Bootstrapping
 
@@ -102,4 +115,5 @@ Assumes passwordless `sudo` for that user on the Pi (Raspberry Pi Imager sets th
   - Edit `server: https://x.y.z.a:6443` to be `server: https://TBD.TBD.ts.net:6443`
   - Run `kubectl get pods -A`; expect to see them
 
-Typically, you leave this edit in place and default using TailScale DNS for remote access.
+Typically, you leave this edit in place and default using TailScale DNS for interacting with the cluster.
+You can change it base to IP based approach when interacting without the Internet on the local network without TailScale.
