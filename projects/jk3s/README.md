@@ -6,15 +6,14 @@ A small, reusable tool to provision **one Raspberry Pi 5 (NVMe/PCIe boot)** into
 
 Each sub-directory provides a core component to the build, details in each README describe how to use them. They should be executed in this sequence:
 
-1. `setup-hardware`: Purchase and assemble the hardware
-1. `bootstrap-host`: Provision RPi OS on the hardware, boot from NVMe/PCIe, configure static LAN IP
+1. `setup-hardware`: Purchase and assemble the hardware. Provision RPi OS on the hardware. Boot from NVMe/PCIe. Configure static LAN IP/DHCP reservation.
 1. `bootstrap-k3s`: Provision k3s on RPi in stripped down mode
 1. `helmfile-base`: Deploy CloudFlared Tunnel and hello world http service
 
 After this sequence of projects is worked. "hello world" content should be available at some `https://example.com` endpoint.
 
-The next step from here is to build a `helmfile-app` project that deploys real software to this K3s cluster. Copy and modify `helmfile-base` as needed to achieve this.
+The next step from here is to build a `helmfile-app` project that deploys real software to this K3s cluster. Copy and modify `helmfile-base` as needed to achieve this. Commit this to a separate repo you control maybe along-side your app code at `deploy/helmfile-app`.
 
 ## Get started
 
-Open `setup-hardware/README.md`. Work it end to end. When done, work `bootstrap-host/README.md`, and so on and so forth.
+Open `setup-hardware/README.md`. Work it end to end. When done, work `bootstrap-k3s/README.md`, and so on and so forth.
