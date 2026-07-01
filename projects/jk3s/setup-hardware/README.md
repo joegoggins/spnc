@@ -52,3 +52,8 @@ microSD > 16Gb
      then expand root via `sudo raspi-config` → Advanced → Expand Filesystem; or fresh-flash the
      NVMe from a USB-NVMe adapter on your laptop — but then you re-enter the Imager presets.)*
 1. **DHCP reservation with your home Router** at the router: bind the Pi's MAC → a fixed IP (survives reflashes).
+
+# Done Criteria
+
+1. Can ssh into the RPi like this: `ssh -i ~/.ssh/<some_key> <some_user>@<some_ip>`
+1. `findmnt /` shows RPi is booting from NVMe
