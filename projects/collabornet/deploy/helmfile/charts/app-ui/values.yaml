@@ -1,0 +1,12 @@
+# Defaults; real values come from charts/app-ui/values.yaml.gotmpl (helmfile).
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: "1.27-alpine"
+  pullPolicy: IfNotPresent
+
+resources: {}
+
+# Headline text rendered into the served index.html.
+message: "hello world"

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+data:
+  index.html: |
+    <!doctype html>
+    <meta charset="utf-8">
+    <title>Collabornet</title>
+    <h1>{{ .Values.message }}</h1>
+    <p>app-ui — served at collabornet.japoofis.com from k3s (gaia) via Cloudflare Tunnel.</p>
+    <p>Coming soon: the React app, the /radius experience, and /api proxied to app-api.</p>

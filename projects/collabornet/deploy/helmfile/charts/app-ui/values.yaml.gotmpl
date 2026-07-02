@@ -1,0 +1,8 @@
+image:
+  repository: {{ .Values.image.app_ui.repository }}
+  tag: {{ .Values.image.app_ui.tag | quote }}
+
+resources:
+  {{- toYaml .Values.resources.app_ui | nindent 2 }}
+
+message: {{ .Values.app_ui.message | quote }}

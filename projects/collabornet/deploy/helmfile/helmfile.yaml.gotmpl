@@ -24,3 +24,11 @@ releases:
     chart: charts/cloudflared
     inherit:
       - template: appRelease
+
+  # app-ui — nginx hello-world placeholder; cloudflared routes
+  # collabornet.japoofis.com to this Service. Swapped for the real React image
+  # (serving /, /radius, and an /api proxy to app-api) in a later increment.
+  - name: app-ui
+    chart: charts/app-ui
+    inherit:
+      - template: appRelease

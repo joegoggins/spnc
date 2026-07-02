@@ -59,7 +59,7 @@ machine and is what decrypts every secret here.
 
 ## Deploy Cloudflared
 
-Serves `https://radius.collabornet.japoofis.com`.
+Serves `https://collabornet.japoofis.com`.
 
 First confirm the manifests render with secrets decrypted (needs a valid `gaia`
 context for the guard hook, but does not touch the cluster):
@@ -71,16 +71,36 @@ cd projects/collabornet/deploy/helmfile
 helmfile -e sp-staging template   # expect "Decrypting secret ..." + rendered manifests
 ```
 
-Then `diff` / `apply` (`radius-ui` gets added in the next increment):
+Then `diff` / `apply`:
 
 ```sh
-helmfile -e sp-staging diff -l name=cloudflared
+helmfile -e sp-staging diff  -l name=cloudflared
 helmfile -e sp-staging apply -l name=cloudflared
 ```
 
-## Deploy Radius UI
+## Deploy App UI
+
+nginx hello-world placeholder behind `collabornet.japoofis.com` (later: the real
+React image serving `/`, `/radius`, and an `/api` proxy to `app-api`).
 
 ```sh
-helmfile -e sp-staging diff -l name=radius-ui
-helmfile -e sp-staging apply -l name=radius-ui
+helmfile -e sp-staging diff  -l name=app-ui
+helmfile -e sp-staging apply -l name=app-ui
 ```
+
+### DNS route (one-time)
+
+The host+path → in-cluster-Service routing lives in git (the cloudflared config).
+The one piece that doesn't is the public DNS record — a *proxied* CNAME
+`collabornet → <tunnel-id>.cfargotunnel.com` — which `cloudflared tunnel route dns`
+creates/updates idempotently:
+
+```sh
+cloudflared tunnel route dns a7a8bcfc-b25e-4aa0-add9-ec9235a7659c collabornet.japoofis.com
+```
+
+**Re: "how to manage this properly"** — because we now route by **path**, not a
+hostname per service, this is a *single* record for the whole platform; `/radius`,
+`/api`, etc. add no new DNS. So there's essentially one CNAME to own. If you ever
+want it declarative, model it as a `cloudflare_record` in Terraform/OpenTofu — but
+for one record that's usually overkill vs. this one-liner.

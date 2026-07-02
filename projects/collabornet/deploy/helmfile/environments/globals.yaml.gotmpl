@@ -6,9 +6,16 @@ image:
   cloudflared:
     repository: cloudflare/cloudflared
     tag: "2025.6.1"
+  app_ui:
+    repository: nginx
+    tag: "1.27-alpine"
 
 resources:
   cloudflared: { requests: { cpu: 25m, memory: 64Mi }, limits: {} }
+  app_ui:      { requests: { cpu: 50m, memory: 64Mi }, limits: {} }
 
 cloudflared:
   credentialsSecretName: cloudflared-credentials
+
+app_ui:
+  message: "hello world"

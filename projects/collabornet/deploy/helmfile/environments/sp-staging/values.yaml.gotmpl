@@ -1,7 +1,9 @@
 # sp-staging = the japoofis.com box (kube-context "gaia").
 # Public hostname routing for the tunnel. Origins are in-cluster Services in the
-# sp-staging namespace ({{ .Environment.Name }}). radius-ui is deployed next.
+# sp-staging namespace ({{ .Environment.Name }}). Single-label host so it's
+# covered by the free *.japoofis.com edge cert; path routing (/radius, /api)
+# lives inside the app-ui app.
 cloudflared:
   ingress:
-    - hostname: radius.collabornet.japoofis.com
-      service: http://radius-ui.{{ .Environment.Name }}.svc.cluster.local:80
+    - hostname: collabornet.japoofis.com
+      service: http://app-ui.{{ .Environment.Name }}.svc.cluster.local:80
