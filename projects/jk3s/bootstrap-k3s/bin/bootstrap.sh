@@ -81,6 +81,24 @@ else
   exit 0
 fi
 
+# ------------------------------------------------------------------------------
+# TODO(nvme-stability): fold in the Pi 5 NVMe hardening validated by hand after the
+# 2026-07-01 read-only-remount outage on `earth` (see collabornet/stories/SPNC-0005
+# and jk3s/setup-hardware). NOT automated yet — proving it out first, then default it.
+#   1. Append NVMe/PCIe power-state stability flags to /boot/firmware/cmdline.txt,
+#      using the same single-line sed idiom as the cgroup args above:
+#          nvme_core.default_ps_max_latency_us=0 pcie_aspm=off
+#      Why: DRAM-less/HMB drives (e.g. the Inland TN320) stall over the Pi 5 PCIe
+#      link under load -> nvme driver returns EIO -> ext4 aborts the journal ->
+#      root remounts read-only -> sshd/k3s/dhcpcd all die (box pings but is wedged).
+#      SMART was clean (0 media_errors) => transport stall, not media failure.
+#   2. Enable a persistent journal so the next crash boot's kernel log survives.
+#      NB: Storage=auto + an empty /var/log/journal did NOT promote to persistent on
+#      this Pi OS build; set it explicitly via a drop-in:
+#          printf '[Journal]\nStorage=persistent\n' | sudo tee /etc/systemd/journald.conf.d/persistent.conf
+#          sudo mkdir -p /var/log/journal && sudo systemctl restart systemd-journald && sudo journalctl --flush
+# ------------------------------------------------------------------------------
+
 if [[ -n "${JK3S_K3S_VERSION:-}" ]]; then
   echo "==> install k3s (pinned ${JK3S_K3S_VERSION}; trimmed: no traefik, no servicelb; local-path kept)"
 else
