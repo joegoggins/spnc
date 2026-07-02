@@ -1,0 +1,7 @@
+# sp-staging = the japoofis.com box (kube-context "gaia").
+# Public hostname routing for the tunnel. Origins are in-cluster Services in the
+# sp-staging namespace ({{ .Environment.Name }}). radius-ui is deployed next.
+cloudflared:
+  ingress:
+    - hostname: radius.collabornet.japoofis.com
+      service: http://radius-ui.{{ .Environment.Name }}.svc.cluster.local:80

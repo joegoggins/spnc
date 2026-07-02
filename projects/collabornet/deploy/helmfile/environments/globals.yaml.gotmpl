@@ -1,0 +1,14 @@
+# Non-secret defaults shared across environments.
+# Secrets (cloudflared.tunnelId, cloudflared.credentialsJson) are merged in per-env
+# from environments/<env>/secrets/*.yaml (SOPS-encrypted; see .sops.yaml).
+
+image:
+  cloudflared:
+    repository: cloudflare/cloudflared
+    tag: "2025.6.1"
+
+resources:
+  cloudflared: { requests: { cpu: 25m, memory: 64Mi }, limits: {} }
+
+cloudflared:
+  credentialsSecretName: cloudflared-credentials

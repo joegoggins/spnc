@@ -1,0 +1,26 @@
+environments:
+{{ readFile "environments.yaml.gotmpl" | fromYaml | toYaml | indent 2 }}
+---
+helmDefaults:
+  wait: true
+  timeout: 120
+
+templates:
+  appRelease:
+    namespace: "{{`{{ .Environment.Name }}`}}"
+    createNamespace: true
+    values:
+      - charts/{{`{{ .Release.Name }}`}}/values.yaml.gotmpl
+    hooks:
+      - events: ["prepare"]
+        showlogs: true
+        command: ./helmfile-hook-commands/ensure-kubectl-context-is-ok-for-env.sh
+        args: ["{{`{{ .Environment.Name }}`}}"]
+
+releases:
+  # cloudflared — the only HTTPS ingress into the cluster. Tunnel creds come from
+  # the SOPS-encrypted env secret (environments/sp-staging/secrets/cloudflared.yaml).
+  - name: cloudflared
+    chart: charts/cloudflared
+    inherit:
+      - template: appRelease

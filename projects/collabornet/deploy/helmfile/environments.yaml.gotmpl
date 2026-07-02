@@ -1,0 +1,11 @@
+sp-local:
+  values:
+    - environments/globals.yaml.gotmpl
+    - environments/sp-local/values.yaml.gotmpl
+
+sp-staging:
+  values:
+    - environments/globals.yaml.gotmpl
+    - environments/sp-staging/values.yaml.gotmpl
+  secrets:
+    - environments/sp-staging/secrets/cloudflared.yaml

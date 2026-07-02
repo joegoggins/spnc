@@ -1,0 +1,23 @@
+# Defaults; real values come from charts/cloudflared/values.yaml.gotmpl (helmfile).
+replicaCount: 1
+
+image:
+  repository: cloudflare/cloudflared
+  tag: "2025.6.1"
+  pullPolicy: IfNotPresent
+
+resources: {}
+
+# Tunnel UUID from `cloudflared tunnel create`.
+tunnelId: ""
+
+# k8s Secret holding credentials.json. This chart renders the Secret itself from
+# credentialsJson (below), which is supplied SOPS-encrypted — git is the single
+# source of truth; no out-of-band `kubectl create secret` needed.
+credentialsSecretName: cloudflared-credentials
+credentialsJson: ""
+
+# Public hostname -> in-cluster origin routing. A catch-all 404 is appended.
+ingress: []
+#  - hostname: radius.collabornet.japoofis.com
+#    service: http://radius-ui.sp-staging.svc.cluster.local:80
