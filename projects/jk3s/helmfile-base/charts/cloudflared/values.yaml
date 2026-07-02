@@ -1,0 +1,20 @@
+# Defaults; real values come from charts/cloudflared/values.yaml.gotmpl (helmfile).
+replicaCount: 1
+
+image:
+  repository: cloudflare/cloudflared
+  tag: "2025.6.1"
+  pullPolicy: IfNotPresent
+
+resources: {}
+
+# Tunnel UUID from `cloudflared tunnel create`.
+tunnelId: ""
+
+# k8s Secret holding credentials.json (created out-of-band, not committed).
+credentialsSecretName: cloudflared-credentials
+
+# Public hostname -> in-cluster origin routing. A catch-all 404 is appended.
+ingress: []
+#  - hostname: app.example.com
+#    service: http://hello-world.sp-staging.svc.cluster.local:80

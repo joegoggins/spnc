@@ -1,0 +1,20 @@
+# What software are we deploying
+image:
+  cloudflared:
+    repository: cloudflare/cloudflared
+    tag: "2025.6.1"
+
+  hello_world:
+    repository: TODO
+    tag: TODO
+
+resources:
+  cloudflared: { requests: { cpu: 25m,  memory: 64Mi },  limits: {} }
+  hello_world: { requests: { cpu: 50m,  memory: 128Mi }, limits: {} }
+
+# Cloudflare Tunnel — shared defaults; per-tunnel values live in the env files.
+cloudflared:
+  credentialsSecretName: cloudflared-credentials
+  ingress:
+    - hostname: {{ printf "hello-world.%s" (requiredEnv "JK3S_BASE_DNS") | quote }}
+      service: http://hello-world.{{ .Environment.Name }}.svc.cluster.local:80

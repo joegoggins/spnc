@@ -1,0 +1,12 @@
+image:
+  repository: {{ .Values.image.cloudflared.repository }}
+  tag: {{ .Values.image.cloudflared.tag }}
+
+resources:
+  {{- toYaml .Values.resources.cloudflared | nindent 2 }}
+
+tunnelId: {{ .Values.cloudflared.tunnelId | quote }}
+credentialsSecretName: {{ .Values.cloudflared.credentialsSecretName }}
+
+ingress:
+  {{- toYaml .Values.cloudflared.ingress | nindent 2 }}

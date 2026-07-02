@@ -1,0 +1,5 @@
+# Overrides from globals.yaml.gotmpl
+
+cloudflared:
+  # Tunnel UUID is supplied at deploy time via env var (never committed); see README.
+  tunnelId: {{ requiredEnv "JK3S_CLOUDFLARED_TUNNEL_ID" | quote }}
