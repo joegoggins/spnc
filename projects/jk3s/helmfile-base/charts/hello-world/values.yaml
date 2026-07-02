@@ -1,0 +1,12 @@
+# Defaults; real values come from charts/hello-world/values.yaml.gotmpl (helmfile).
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: "1.27-alpine"
+  pullPolicy: IfNotPresent
+
+resources: {}
+
+# Text served at "/" — the in-cluster origin behind the cloudflared tunnel.
+message: "hello world from jk3s"

@@ -82,21 +82,51 @@ else
 fi
 
 # ------------------------------------------------------------------------------
-# TODO(nvme-stability): fold in the Pi 5 NVMe hardening validated by hand after the
-# 2026-07-01 read-only-remount outage on `earth` (see collabornet/stories/SPNC-0005
-# and jk3s/setup-hardware). NOT automated yet — proving it out first, then default it.
-#   1. Append NVMe/PCIe power-state stability flags to /boot/firmware/cmdline.txt,
-#      using the same single-line sed idiom as the cgroup args above:
-#          nvme_core.default_ps_max_latency_us=0 pcie_aspm=off
-#      Why: DRAM-less/HMB drives (e.g. the Inland TN320) stall over the Pi 5 PCIe
-#      link under load -> nvme driver returns EIO -> ext4 aborts the journal ->
-#      root remounts read-only -> sshd/k3s/dhcpcd all die (box pings but is wedged).
-#      SMART was clean (0 media_errors) => transport stall, not media failure.
-#   2. Enable a persistent journal so the next crash boot's kernel log survives.
-#      NB: Storage=auto + an empty /var/log/journal did NOT promote to persistent on
-#      this Pi OS build; set it explicitly via a drop-in:
-#          printf '[Journal]\nStorage=persistent\n' | sudo tee /etc/systemd/journald.conf.d/persistent.conf
-#          sudo mkdir -p /var/log/journal && sudo systemctl restart systemd-journald && sudo journalctl --flush
+# TODO(nvme-stability): ESCALATION LADDER for the Pi 5 + DRAM-less NVMe read-only
+# outages (refs: collabornet/stories/SPNC-0005, joe-notes .../crash-drive-goes-read-only.md).
+#
+# Failure mode: Inland TN320 (DRAM-less/HMB, Realtek RTS5765DL) stalls over the Pi 5
+# PCIe link under write load -> nvme driver returns EIO -> ext4 aborts journal ->
+# root remounts read-only -> k3s/sshd/dhcpcd die (box still pings via resident tailscaled,
+# but is wedged). SMART clean (0 media_errors) => transport stall, not media failure.
+# NOT auto-applied here: climb only as far as needed, and let journal evidence pick the rung.
+#
+# EACH recurrence, FIRST capture what the transport actually did (persistent journal is on,
+# so the crash boot survives the reboot):
+#     sudo journalctl -k -b -1 | grep -iE 'nvme|pcie|aer|ext4|under-voltage|read-only'
+#     vcgencmd get_throttled          # bit 16 (0x10000) set == undervoltage occurred
+#   'nvme .* reset'/timeout      => link/drive     -> Layer 1a (Gen1), then Layer 3a (DRAM drive)
+#   'PCIe.*AER'/Correctable/Fatal=> signal integrity-> Layer 1a (Gen1) / reseat FPC / Layer 3
+#   under-voltage / bit 16 set   => power           -> Layer 2
+#
+# Layer 0  DONE 2026-07-01, INSUFFICIENT (recurred same evening under `helmfile apply` load):
+#     /boot/firmware/cmdline.txt:  nvme_core.default_ps_max_latency_us=0 pcie_aspm=off  (APST+ASPM off)
+#     Persistent journal enabled (drop-in): printf '[Journal]\nStorage=persistent\n' \
+#       | sudo tee /etc/systemd/journald.conf.d/persistent.conf; then mkdir /var/log/journal + restart journald.
+#
+# Layer 1  remaining FREE config levers (edit, reboot, then re-run a real deploy under the watch above):
+#   a. Force PCIe Gen1 — biggest untried lever, relaxes FPC signal integrity (currently links Gen2/5.0GT/s):
+#          /boot/firmware/config.txt:  dtparam=pciex1_gen=1     # (verify param vs current RPi docs)
+#   b. cmdline.txt: add  pcie_port_pm=off   (complements pcie_aspm=off)
+#   c. Experiment: HMB off  nvme.max_host_mem_size_mb=0  (DRAM-less drives vary — try with/without)
+#
+# Layer 2  power (their own notes: "underpowered supplies are a top cause of flaky NVMe"):
+#   Confirm official RPi 27W USB-C PD (NOT PoE; never both). If throttled bit 16 ever sets, this IS
+#   the cause -> better PSU / shed peripherals. (Active cooler already fitted; temps were fine.)
+#
+# Layer 3  swap the storage medium — the "make it just work" fixes (pick one):
+#   a. DRAM-equipped NVMe from a Pi-5-known-good list (e.g. Jeff Geerling's pipci). Removes the
+#      DRAM-less/HMB stall class ENTIRELY and makes Layer 0/1 workarounds unnecessary. Caveats:
+#      DRAM drives draw MORE power (do Layer 2 first) and won't help a PCIe-signal fault (Layer 1)
+#      -> so gate the purchase on the journal evidence above.
+#   b. Boot from a USB3 SSD (UASP) instead of NVMe: bypasses the PCIe/FPC path entirely, proven
+#      stable, at throughput cost. Surest single-node fix; if a DRAM NVMe *still* stalls, that
+#      implicates the HAT/FPC/board, not the drive.
+#
+# Layer 4  ARCHITECTURE — the real production answer, folds into the SPNC-0006 mini-rack:
+#   Single-node k3s on flaky storage is inherently fragile (one drive fault = whole cluster down).
+#   Go multi-node HA: 3 server nodes w/ embedded etcd so one node's storage death doesn't kill the
+#   API; add restic/Velero backups (SPNC-0005). Survive storage faults instead of preventing each one.
 # ------------------------------------------------------------------------------
 
 if [[ -n "${JK3S_K3S_VERSION:-}" ]]; then

@@ -18,6 +18,11 @@ templates:
         args: ["{{`{{ .Environment.Name }}`}}"]
 
 releases:
+  - name: hello-world
+    chart: charts/hello-world
+    inherit:
+      - template: appRelease
+
   - name: cloudflared
     chart: charts/cloudflared
     inherit:

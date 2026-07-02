@@ -1,0 +1,8 @@
+image:
+  repository: {{ .Values.image.hello_world.repository }}
+  tag: {{ .Values.image.hello_world.tag | quote }}
+
+resources:
+  {{- toYaml .Values.resources.hello_world | nindent 2 }}
+
+message: {{ .Values.hello_world.message | quote }}

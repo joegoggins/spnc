@@ -5,8 +5,8 @@ image:
     tag: "2025.6.1"
 
   hello_world:
-    repository: TODO
-    tag: TODO
+    repository: nginx
+    tag: "1.27-alpine"
 
 resources:
   cloudflared: { requests: { cpu: 25m,  memory: 64Mi },  limits: {} }
@@ -18,3 +18,7 @@ cloudflared:
   ingress:
     - hostname: {{ printf "hello-world.%s" (requiredEnv "JK3S_BASE_DNS") | quote }}
       service: http://hello-world.{{ .Environment.Name }}.svc.cluster.local:80
+
+# Hello-world origin — shared defaults; per-env content can override in the env files.
+hello_world:
+  message: "hello world from jk3s"
