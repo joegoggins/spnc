@@ -2,11 +2,8 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  tag: "1.27-alpine"
+  repository: ghcr.io/joegoggins/collabornet-app-ui
+  tag: "0.1.0"
   pullPolicy: IfNotPresent
 
 resources: {}
-
-# Headline text rendered into the served index.html.
-message: "hello world"

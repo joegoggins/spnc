@@ -13,8 +13,6 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}
-      annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       containers:
         - name: nginx
@@ -35,11 +33,3 @@ spec:
             initialDelaySeconds: 5
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
-            - name: html
-              mountPath: /usr/share/nginx/html
-              readOnly: true
-      volumes:
-        - name: html
-          configMap:
-            name: {{ .Release.Name }}-config

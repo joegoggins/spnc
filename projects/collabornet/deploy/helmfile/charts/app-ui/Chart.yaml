@@ -1,6 +1,6 @@
 apiVersion: v2
 name: app-ui
-description: Collabornet app UI — nginx hello-world placeholder (React app, incl. /radius and /api proxy, lands later).
+description: Collabornet app UI — React SPA (Vite) served by nginx from the built image.
 type: application
 version: 0.1.0
 appVersion: "0.1.0"

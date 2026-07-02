@@ -7,8 +7,8 @@ image:
     repository: cloudflare/cloudflared
     tag: "2025.6.1"
   app_ui:
-    repository: nginx
-    tag: "1.27-alpine"
+    repository: ghcr.io/joegoggins/collabornet-app-ui
+    tag: "0.1.0"
 
 resources:
   cloudflared: { requests: { cpu: 25m, memory: 64Mi }, limits: {} }
@@ -16,6 +16,3 @@ resources:
 
 cloudflared:
   credentialsSecretName: cloudflared-credentials
-
-app_ui:
-  message: "hello world"

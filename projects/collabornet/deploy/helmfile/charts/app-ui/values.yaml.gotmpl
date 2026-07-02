@@ -4,5 +4,3 @@ image:
 
 resources:
   {{- toYaml .Values.resources.app_ui | nindent 2 }}
-
-message: {{ .Values.app_ui.message | quote }}
