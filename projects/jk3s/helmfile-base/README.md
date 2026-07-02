@@ -6,6 +6,8 @@ terminates TLS at the edge and forwards public traffic to in-cluster origins
 over the tunnel. Routing lives in-repo (`charts/cloudflared`); the tunnel
 credentials live in a k8s Secret (never committed).
 
+This project is used to validate the end to end deployment pipeline. After doing this once, before deploying an app to it, it should be destroyed. This is so CloudFlare deployment doesn't conflict with app code deployment
+
 # Prerequisites / To install on laptop
 
 - `cloudflared`
@@ -62,3 +64,15 @@ Example uses the `sp-staging` env (the `gaia` cluster).
 
 1. `kubectl -n sp-staging rollout status deploy/cloudflared` reports available.
 2. The configured hostname serves the in-cluster origin over HTTPS.
+
+
+# Cleanup/nuke the whole project
+
+```sh
+export KUBECONFIG=~/.kube/gaia.yaml
+helmfile -e sp-staging destroy
+```
+
+# Move onto an actual app deployment using this stack
+
+Copy and paste the `helmfile-base` project into `deploy/helmfile` in your project.
