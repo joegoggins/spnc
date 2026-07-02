@@ -4,6 +4,8 @@ replicaCount: 1
 image:
   repository: ghcr.io/joegoggins/collabornet-app-ui
   tag: "0.1.0"
-  pullPolicy: IfNotPresent
+  # Always: sp-staging pins to the moving `deploy-main` tag, so a freshly
+  # scheduled/restarted pod must re-check the registry to get the current image.
+  pullPolicy: Always
 
 resources: {}

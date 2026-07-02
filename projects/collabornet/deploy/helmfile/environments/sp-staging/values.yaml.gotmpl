@@ -7,3 +7,13 @@ cloudflared:
   ingress:
     - hostname: collabornet.japoofis.com
       service: http://app-ui.{{ .Environment.Name }}.svc.cluster.local:80
+
+# Track the tip of main: CI pushes a moving `deploy-main` tag on every main
+# commit. Overrides the pinned default (image.app_ui.tag) in globals.
+# NOTE: the tag string is stable, so `helmfile apply` won't roll out when the
+# tag *moves*. Redeploy the current deploy-main with:
+#   kubectl -n sp-staging rollout restart deploy/app-ui
+# (imagePullPolicy: Always on the chart makes the restarted pod pull it.)
+image:
+  app_ui:
+    tag: deploy-main
