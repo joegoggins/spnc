@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Postcards</title>
+<style>{{ css }}</style>
+</head>
+<body>
+{% for page in pages %}
+<section class="sheet">
+{% for fragment in page %}{{ fragment | safe }}{% endfor %}
+</section>
+{% endfor %}
+</body>
+</html>

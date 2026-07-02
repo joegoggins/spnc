@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Avery 5389 calibration</title>
+<style>{{ css }}</style>
+</head>
+<body>
+<section class="sheet">
+  <div class="cal-info">
+    Avery 5389 calibration &middot; offset x={{ '%.3f'|format(offset_x) }}in y={{ '%.3f'|format(offset_y) }}in
+    &middot; hold to the light over a blank sheet, then pass --offset-x/--offset-y to nudge
+  </div>
+  {% for slot in slots %}
+  <div class="cal-slot" style="left:{{ slot.left_in }}in; top:{{ slot.top_in }}in;">
+    <div class="cal-cross-h"></div>
+    <div class="cal-cross-v"></div>
+    <span class="cal-tick tl"></span><span class="cal-tick tr"></span>
+    <span class="cal-tick bl"></span><span class="cal-tick br"></span>
+    <div class="cal-label">card {{ loop.index }} &middot; 6.0 &times; 4.0 in</div>
+  </div>
+  {% endfor %}
+</section>
+</body>
+</html>

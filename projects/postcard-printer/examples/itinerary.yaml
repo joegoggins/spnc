@@ -1,0 +1,14 @@
+cards:
+  - type: itinerary
+    date: "Friday · July 3"
+    title: "Amy Appreciation Day"
+    subtitle: "A glorious day together in a fine city"
+    accent: "#2f7d5b"
+    items:
+      - { time: "10a",  text: "Yoga at the YMCA" }
+      - { time: "12p", text: "Breakfast Burrito Brunch" }
+      - { time: "Afternoon",  text: "Worship at the Church of Abraham Dinken" }
+      - { time: "530p",  text: "Picnic snack and drinks in the park (by bike)" }
+      - { time: "730p",  text: "Dinner in Uptown (by bike)" }
+    footer: "I · Love · You"
+    qr: ""

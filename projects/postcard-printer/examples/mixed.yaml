@@ -1,0 +1,20 @@
+# One sheet, two different formats — shows the template system.
+cards:
+  - type: itinerary
+    date: "Sunday · July 13"
+    title: "Slow Morning"
+    accent: "#3a6ea5"
+    items:
+      - { time: "9:00a",  text: "Pancakes" }
+      - { time: "10:30a", text: "Farmers market" }
+      - { time: "12:00p", text: "Nap in the hammock" }
+      - { time: "2:00p",  text: "Bike to the lake" }
+    footer: "no agenda, on purpose"
+  - type: note
+    title: "Hey friend,"
+    text: >-
+      Thanks for a wonderful weekend. Scan the code for all the photos
+      from the trip — and let's do it again soon.
+    signoff: "— J"
+    qr: "https://photos.example.com/album/point-reyes"
+    qr_caption: "trip photos"

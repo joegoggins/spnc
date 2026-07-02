@@ -1,0 +1,14 @@
+<article class="card card--note"
+  style="left:{{ slot.left_in }}in; top:{{ slot.top_in }}in; --accent:{{ card.accent | default('#c0392b') }};">
+  <div class="note-body">
+    {% if card.title %}<div class="note-title">{{ card.title }}</div>{% endif %}
+    <div class="note-text">{{ card.text | default('') }}</div>
+    {% if card.signoff %}<div class="note-signoff">{{ card.signoff }}</div>{% endif %}
+  </div>
+  {% if card.qr_svg %}
+  <div class="note-qr">
+    {{ card.qr_svg | safe }}
+    {% if card.qr_caption %}<div class="note-qr-cap">{{ card.qr_caption }}</div>{% endif %}
+  </div>
+  {% endif %}
+</article>

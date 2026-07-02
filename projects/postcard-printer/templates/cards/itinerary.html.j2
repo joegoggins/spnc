@@ -1,0 +1,25 @@
+<article class="card card--itinerary"
+  style="left:{{ slot.left_in }}in; top:{{ slot.top_in }}in; --accent:{{ card.accent | default('#e4572e') }};">
+  <div class="rail"></div>
+  <div class="body">
+    <header class="itin-head">
+      {% if card.date %}<div class="itin-date">{{ card.date }}</div>{% endif %}
+      <h1 class="itin-title">{{ card.title }}</h1>
+      {% if card.subtitle %}<div class="itin-sub">{{ card.subtitle }}</div>{% endif %}
+    </header>
+    <ul class="itin-list">
+      {% for item in card['items'] %}
+      <li class="itin-item">
+        {% if item.time %}<span class="itin-time">{{ item.time }}</span>{% endif %}
+        <span class="itin-text">{{ item.text }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% if card.footer or card.qr_svg %}
+    <footer class="itin-foot">
+      <span class="itin-footer-text">{{ card.footer | default('') }}</span>
+      {% if card.qr_svg %}<span class="itin-qr">{{ card.qr_svg | safe }}</span>{% endif %}
+    </footer>
+    {% endif %}
+  </div>
+</article>

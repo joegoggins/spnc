@@ -1,0 +1,109 @@
+/* ---- Sheet & print setup (Avery 5389: 2x 6"x4" cards on US Letter) ---- */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+@page { size: 8.5in 11in; margin: 0; }
+
+.sheet {
+  position: relative;
+  width: 8.5in;
+  height: 11in;
+  overflow: hidden;
+  page-break-after: always;
+}
+.sheet:last-child { page-break-after: auto; }
+
+.card {
+  position: absolute;
+  width: 6in;
+  height: 4in;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* ---- Itinerary card ---- */
+.card--itinerary {
+  display: flex;
+  color: #1a1a1a;
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+.card--itinerary .rail { flex: 0 0 0.26in; background: var(--accent); }
+.card--itinerary .body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 0.28in 0.34in 0.24in 0.3in;
+}
+.itin-date {
+  font-size: 8pt; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent);
+}
+.itin-title {
+  margin: 2pt 0 0; font-size: 21pt; font-weight: 800;
+  line-height: 1.03; letter-spacing: -0.01em;
+}
+.itin-sub { margin-top: 3pt; font-size: 9.5pt; color: #666; }
+.itin-list { flex: 1 1 auto; list-style: none; margin: 9pt 0 0; padding: 0; }
+.itin-item {
+  display: flex; gap: 0.14in; align-items: baseline;
+  padding: 2.6pt 0; border-bottom: 0.5pt solid #ededed;
+}
+.itin-item:last-child { border-bottom: none; }
+.itin-time {
+  flex: 0 0 0.72in; text-align: right;
+  font-size: 8.5pt; font-weight: 700; color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.itin-text { font-size: 10pt; line-height: 1.2; }
+.itin-foot {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-top: 8pt;
+}
+.itin-footer-text { font-size: 8pt; color: #999; letter-spacing: 0.04em; }
+.itin-qr { width: 0.62in; height: 0.62in; flex: 0 0 auto; }
+.itin-qr svg { width: 100%; height: 100%; display: block; }
+
+/* ---- Handwritten note card (lined paper + cursive + QR) ---- */
+.card--note {
+  padding: 0.32in 0.36in;
+  color: #22303f;
+  font-family: "Bradley Hand", "Snell Roundhand", "Segoe Script", cursive;
+  background-color: #fffdf6;
+  /* faint horizontal rule lines + a red left margin */
+  background-image:
+    linear-gradient(to right, transparent 0.62in, #e7b0a8 0.62in, #e7b0a8 calc(0.62in + 0.5pt), transparent calc(0.62in + 0.5pt)),
+    repeating-linear-gradient(#fffdf6, #fffdf6 27pt, #cfe0ee 27pt, #cfe0ee calc(27pt + 0.5pt));
+}
+.card--note .note-body { padding-left: 0.5in; }
+.note-title { font-size: 17pt; }
+.note-text { font-size: 14pt; line-height: 27pt; margin-top: 4pt; }
+.note-signoff { font-size: 15pt; margin-top: 10pt; }
+.note-qr {
+  position: absolute; right: 0.28in; bottom: 0.26in;
+  width: 0.9in; text-align: center;
+}
+.note-qr svg { width: 0.8in; height: 0.8in; display: block; margin: 0 auto; }
+.note-qr-cap {
+  font-family: -apple-system, Arial, sans-serif;
+  font-size: 6.5pt; letter-spacing: 0.08em; text-transform: uppercase;
+  color: #6b7885; margin-top: 2pt;
+}
+
+/* ---- Calibration sheet ---- */
+.cal-info {
+  position: absolute; top: 0.35in; left: 0.5in; right: 0.5in;
+  font-family: -apple-system, Arial, sans-serif; font-size: 8pt; color: #555;
+}
+.cal-slot { position: absolute; width: 6in; height: 4in; border: 0.5pt dashed #999; }
+.cal-cross-h { position: absolute; top: 50%; left: 0; right: 0; border-top: 0.5pt solid #ccc; }
+.cal-cross-v { position: absolute; left: 50%; top: 0; bottom: 0; border-left: 0.5pt solid #ccc; }
+.cal-tick { position: absolute; width: 0.2in; height: 0.2in; border: 0 solid var(--accent, #e4572e); }
+.cal-tick { border-color: #e4572e; }
+.cal-tick.tl { top: -0.5pt; left: -0.5pt; border-top-width: 1pt; border-left-width: 1pt; }
+.cal-tick.tr { top: -0.5pt; right: -0.5pt; border-top-width: 1pt; border-right-width: 1pt; }
+.cal-tick.bl { bottom: -0.5pt; left: -0.5pt; border-bottom-width: 1pt; border-left-width: 1pt; }
+.cal-tick.br { bottom: -0.5pt; right: -0.5pt; border-bottom-width: 1pt; border-right-width: 1pt; }
+.cal-label {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  font-family: -apple-system, Arial, sans-serif; font-size: 9pt; color: #888;
+}
