@@ -113,17 +113,6 @@ attached to the app pods as an `imagePullSecret` (see `imagePullSecrets` in
    helmfile -e sp-staging apply -l name=container-registry-credentials
    kubectl -n sp-staging get secret container-registry-credentials   # kubernetes.io/dockerconfigjson
    ```
-
-**Ordering — so you never lock the cluster out:** create this secret and deploy
-app-ui (below) *while the package is still public*, then flip the package to
-Private, then `kubectl -n sp-staging rollout restart deploy/app-ui` and confirm it
-still pulls. Package visibility toggle:
-<https://github.com/users/joegoggins/packages/container/collabornet-app-ui/settings>
-
-To rotate the PAT later: regenerate it, re-run step 2, `helmfile apply` the
-release, then `kubectl -n sp-staging rollout restart deploy/app-ui`.
-
-
 ## Deploy App UI
 
 nginx hello-world placeholder behind `collabornet.japoofis.com` (later: the real
