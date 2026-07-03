@@ -1,1 +1,6 @@
-# No Cloudflared here
+# No Cloudflared here (local reaches app-ui via Tilt port-forward, not a tunnel).
+
+# app-ui's nginx reverse-proxies /api to the app-api Service. Local renders
+# charts vanilla into the default namespace, so target app-api there.
+appUi:
+  apiUpstream: "app-api.default.svc.cluster.local:80"

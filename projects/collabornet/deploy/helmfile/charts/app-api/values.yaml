@@ -12,3 +12,11 @@ resources: {}
 
 # Populated from globals (helmfile) for private GHCR pulls.
 imagePullSecrets: []
+
+# DB connection; the container env block is only rendered when secretName is set
+# (populated from globals via values.yaml.gotmpl).
+database:
+  host: ""
+  name: ""
+  user: ""
+  secretName: ""

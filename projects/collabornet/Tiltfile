@@ -49,3 +49,12 @@ k8s_resource(
     links=['http://localhost:8000'],
     labels=['core-service'],
 )
+
+# app-api-postgres on localhost:5432 for local psql/inspection. Public image, so
+# Tilt just deploys it (no docker_build). After `tilt up`, run migrations + seed:
+#   make migrate && make seed   (MIGRATE_ENV defaults to sp-local -> default ns)
+k8s_resource(
+    'app-api-postgres',
+    port_forwards='5432:5432',
+    labels=['datastore'],
+)

@@ -140,12 +140,43 @@ hostname per service, this is a *single* record for the whole platform; `/radius
 want it declarative, model it as a `cloudflare_record` in Terraform/OpenTofu — but
 for one record that's usually overkill vs. this one-liner.
 
+## Deploy App API Postgres
+
+Single-instance PostgreSQL (Deployment + PVC) backing app-api's `collab_sites`
+table. Runs in every env; app-api reaches it in-cluster at `app-api-postgres:5432`.
+The password comes from a Secret the chart renders — locally it's a throwaway dev
+default (globals `appApiPostgres.password`); **sp-staging overrides it with a
+SOPS-encrypted value you create once:**
+
+```sh
+export SOPS_AGE_KEY_FILE=$HOME/.config/sops/age/keys.txt
+cd projects/collabornet/deploy/helmfile
+PGPW="$(openssl rand -base64 24)"
+f=environments/sp-staging/secrets/app-api-postgres.yaml
+printf 'appApiPostgres:\n  password: %s\n' "$PGPW" > "$f"
+sops --config .sops.yaml -e -i "$f"
+unset PGPW
+sops -d "$f" >/dev/null && echo "encrypted + decrypts OK"
+```
+
+> This secret is wired into the sp-staging environment (`environments.yaml.gotmpl`),
+> so **every** `helmfile -e sp-staging …` command needs it to exist — create it
+> before deploying anything else to staging.
+
+Then deploy (the PVC persists data across pod restarts):
+
+```sh
+export KUBECONFIG=~/.kube/gaia.yaml
+helmfile -e sp-staging diff  -l name=app-api-postgres
+helmfile -e sp-staging apply -l name=app-api-postgres
+```
+
 ## Deploy App API
 
 FastAPI (uvicorn) JSON API. It has **no ingress of its own** — cloudflared routes
 everything for `collabornet.japoofis.com` to app-ui, whose nginx reverse-proxies
 `/api/*` to this Service (prefix stripped: `/api` → app-api `/`, `/api/sites` →
-app-api `/sites`). Staging-only for now (it needs the private-GHCR pull secret).
+app-api `/sites`). Reads its rows from **app-api-postgres — deploy that first.**
 
 Images are built + pushed by CI (`.github/workflows/app-api.yml`) on every push to
 `main` touching `services/app-api/**`, tagged `deploy-main` (same pattern as
@@ -158,6 +189,16 @@ cd projects/collabornet/deploy/helmfile
 
 helmfile -e sp-staging diff  -l name=app-api
 helmfile -e sp-staging apply -l name=app-api
+```
+
+Run migrations + seed the demo dataset (on first deploy, and whenever the schema
+or fixtures change). These exec into the app-api pod, which carries alembic + the
+fixtures:
+
+```sh
+cd projects/collabornet
+make migrate MIGRATE_ENV=sp-staging
+make seed    MIGRATE_ENV=sp-staging
 ```
 
 ### Validate

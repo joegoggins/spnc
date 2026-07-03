@@ -25,6 +25,24 @@ spec:
           ports:
             - name: http
               containerPort: 80
+          {{- if .Values.database.secretName }}
+          env:
+            # POSTGRES_* must precede DATABASE_URL — k8s expands $(VAR) using
+            # earlier entries in this list.
+            - name: POSTGRES_HOST
+              value: {{ .Values.database.host | quote }}
+            - name: POSTGRES_DB
+              value: {{ .Values.database.name | quote }}
+            - name: POSTGRES_USER
+              value: {{ .Values.database.user | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.secretName }}
+                  key: POSTGRES_PASSWORD
+            - name: DATABASE_URL
+              value: "postgresql+psycopg://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):5432/$(POSTGRES_DB)"
+          {{- end }}
           readinessProbe:
             httpGet:
               path: /

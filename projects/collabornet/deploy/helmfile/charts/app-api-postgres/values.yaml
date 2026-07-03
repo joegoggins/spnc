@@ -1,0 +1,22 @@
+# Defaults; real values come from charts/app-api-postgres/values.yaml.gotmpl (helmfile).
+replicaCount: 1
+
+image:
+  repository: postgres
+  tag: "16-alpine"
+  pullPolicy: IfNotPresent
+
+resources: {}
+
+storage:
+  size: 1Gi
+  storageClassName: ""   # empty -> cluster default (local-path on kind/k3s)
+
+database:
+  name: collabornet
+  user: collabornet
+  secretName: app-api-postgres
+
+# Superuser password, rendered into the Secret named `database.secretName`. This
+# default is a throwaway for local/dev; sp-staging overrides it with a SOPS value.
+password: "collabornet-local-dev"

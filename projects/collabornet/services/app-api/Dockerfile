@@ -25,6 +25,14 @@ COPY pyproject.toml ./
 COPY app_api ./app_api
 RUN uv pip install --system .
 
+# Migration config + seed fixtures are runtime files (not part of the wheel).
+# `make migrate` runs `alembic upgrade head` from this WORKDIR; `make seed` reads
+# FIXTURES_DIR. Both are invoked via `kubectl exec deployment/app-api -- ...`.
+COPY alembic.ini ./
+COPY alembic ./alembic
+COPY fixtures ./fixtures
+ENV FIXTURES_DIR=/app/fixtures
+
 EXPOSE 80
 # Bind all interfaces on the Service port. Single worker is plenty for now.
 CMD ["uvicorn", "app_api.main:app", "--host", "0.0.0.0", "--port", "80"]

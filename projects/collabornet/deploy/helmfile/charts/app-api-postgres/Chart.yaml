@@ -1,0 +1,6 @@
+apiVersion: v2
+name: app-api-postgres
+description: Collabornet app-api database — single-instance PostgreSQL with a PVC.
+type: application
+version: 0.1.0
+appVersion: "16"

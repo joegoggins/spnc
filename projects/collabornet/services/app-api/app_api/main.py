@@ -1,25 +1,30 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import Depends, FastAPI
+from pydantic import BaseModel, ConfigDict
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app_api.db import get_session
+from app_api.models import CollabSite
 
 app = FastAPI(title="Collabornet API")
 
 
-class CollabSite(BaseModel):
+class CollabSiteOut(BaseModel):
+    """API shape of a collab site. Per SPNC-0007 the demo dataset only has a name."""
+
+    model_config = ConfigDict(from_attributes=True)
+
     name: str
-
-
-# In-memory stand-in for the collab_sites table until app-api-postgres + alembic
-# land (SPNC-0007). Mirrors the single "Demo Site" row that fixtures/demo will seed.
-_DEMO_SITES = [CollabSite(name="Demo Site")]
 
 
 @app.get("/")
 def read_root() -> str:
-    """Liveness/readiness sentinel. Per SPNC-0007, the root route just says OK."""
+    """Liveness/readiness sentinel. DB-free on purpose, so probes pass before
+    migrations have run. Per SPNC-0007 the root route just says OK."""
     return "OK"
 
 
 @app.get("/sites")
-def list_sites() -> list[CollabSite]:
-    """List collab sites. In-memory for now; swaps to a DB read without changing this contract."""
-    return _DEMO_SITES
+def list_sites(session: Session = Depends(get_session)) -> list[CollabSiteOut]:
+    """List the rows in the collab_sites table."""
+    return list(session.scalars(select(CollabSite).order_by(CollabSite.name)))

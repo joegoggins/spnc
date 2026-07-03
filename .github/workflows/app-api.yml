@@ -1,9 +1,14 @@
 name: app-api image
 
-# Monorepo-scoped: only builds when the app-api service (or this workflow) changes.
+# Monorepo-scoped: only runs when the app-api service (or this workflow) changes.
+# PRs run the checks job; main also builds/pushes the image after checks pass.
 on:
   push:
     branches: [main]
+    paths:
+      - 'projects/collabornet/services/app-api/**'
+      - '.github/workflows/app-api.yml'
+  pull_request:
     paths:
       - 'projects/collabornet/services/app-api/**'
       - '.github/workflows/app-api.yml'
@@ -27,7 +32,27 @@ env:
   CONTEXT: projects/collabornet/services/app-api
 
 jobs:
+  # Lint + tests, same as `make lint` / `make test`. Runs on PRs and on main.
+  checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/collabornet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Lint (ruff)
+        run: make lint
+      - name: Test (pytest)
+        run: make test
+
+  # Build/push only after checks pass, and never on pull_request (no GHCR push
+  # from PRs — those run checks only).
   build-push:
+    needs: checks
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

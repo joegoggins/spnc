@@ -12,16 +12,34 @@ image:
   app_api:
     repository: ghcr.io/joegoggins/collabornet-app-api
     tag: "0.1.0"
+  app_api_postgres:
+    repository: postgres
+    tag: "16-alpine"
 
 resources:
   cloudflared: { requests: { cpu: 25m, memory: 64Mi }, limits: {} }
   app_ui:      { requests: { cpu: 50m, memory: 64Mi }, limits: {} }
   app_api:     { requests: { cpu: 50m, memory: 64Mi }, limits: {} }
+  app_api_postgres: { requests: { cpu: 100m, memory: 128Mi }, limits: {} }
 
 # app-ui's nginx proxies /api to this in-cluster app-api Service. Set per-env
 # (empty here); sp-staging points it at app-api.sp-staging.svc.cluster.local.
 appUi:
   apiUpstream: ""
+
+# app-api's database connection. host is the in-cluster Service (same-namespace
+# short name resolves in `default` locally and `sp-staging` remotely). The password
+# lives in the Secret named by secretName, rendered by the app-api-postgres chart.
+database:
+  host: app-api-postgres
+  name: collabornet
+  user: collabornet
+  secretName: app-api-postgres
+
+# Postgres password. Dev default for local (kind, no external exposure); sp-staging
+# overrides it via environments/sp-staging/secrets/app-api-postgres.yaml (SOPS).
+appApiPostgres:
+  password: "collabornet-local-dev"
 
 cloudflared:
   credentialsSecretName: cloudflared-credentials

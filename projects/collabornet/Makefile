@@ -1,4 +1,4 @@
-.PHONY: up down migrate revision \
+.PHONY: up down migrate seed revision \
         kind-up kind-down kind-use tilt-ci tilt-up tilt-down \
         lint format typecheck check test \
         helmfile-diff helmfile-apply helmfile-destroy
@@ -14,13 +14,21 @@ down:
 	$(MAKE) kind-down
 
 MIGRATE_ENV ?= sp-local
-MIGRATE_NAMESPACE := $(MIGRATE_ENV)
+# Local charts render un-namespaced and land in `default` (see Tiltfile); remote
+# envs deploy into a namespace named after the env.
+MIGRATE_NAMESPACE := $(if $(filter sp-local,$(MIGRATE_ENV)),default,$(MIGRATE_ENV))
+SEED_FIXTURE_SET ?= demo
 CONTEXT_GUARD := ./deploy/helmfile/helmfile-hook-commands/ensure-kubectl-context-is-ok-for-env.sh
 
 migrate:
 	$(CONTEXT_GUARD) $(MIGRATE_ENV)
 	kubectl -n $(MIGRATE_NAMESPACE) exec deployment/app-api -- \
 		alembic upgrade head
+
+seed:
+	$(CONTEXT_GUARD) $(MIGRATE_ENV)
+	kubectl -n $(MIGRATE_NAMESPACE) exec deployment/app-api -- \
+		python -m app_api.seed --fixture-set $(SEED_FIXTURE_SET)
 
 ###
 # Commands for interacting with a local Kubernetes on Docker with Kind

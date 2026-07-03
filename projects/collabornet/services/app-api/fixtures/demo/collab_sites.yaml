@@ -1,0 +1,3 @@
+# Demo fixture set — the dataset the endpoint test suite validates against.
+# Add more sets under fixtures/<set>/collab_sites.yaml to test other datasets.
+- name: Demo Site

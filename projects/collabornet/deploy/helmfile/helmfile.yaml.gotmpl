@@ -37,6 +37,13 @@ releases:
       - template: appRelease
 {{- end }}
 
+  # app-api-postgres — single-instance PostgreSQL (Deployment + PVC) backing
+  # app-api. Runs in every env; listed before app-api so its Secret exists first.
+  - name: app-api-postgres
+    chart: charts/app-api-postgres
+    inherit:
+      - template: appRelease
+
   # app-api — FastAPI (uvicorn) JSON API. No ingress of its own; app-ui's nginx
   # reverse-proxies /api/* to it. Runs in every env (local included) so the full
   # app-ui -> app-api path works; in sp-local it lives in the default namespace

@@ -7,3 +7,9 @@ resources:
 
 imagePullSecrets:
   {{- toYaml .Values.imagePullSecrets | nindent 2 }}
+
+database:
+  host: {{ .Values.database.host | quote }}
+  name: {{ .Values.database.name | quote }}
+  user: {{ .Values.database.user | quote }}
+  secretName: {{ .Values.database.secretName | quote }}

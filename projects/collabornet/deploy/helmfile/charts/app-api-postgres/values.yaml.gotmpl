@@ -1,0 +1,13 @@
+image:
+  repository: {{ .Values.image.app_api_postgres.repository }}
+  tag: {{ .Values.image.app_api_postgres.tag | quote }}
+
+resources:
+  {{- toYaml .Values.resources.app_api_postgres | nindent 2 }}
+
+database:
+  name: {{ .Values.database.name | quote }}
+  user: {{ .Values.database.user | quote }}
+  secretName: {{ .Values.database.secretName | quote }}
+
+password: {{ .Values.appApiPostgres.password | quote }}
