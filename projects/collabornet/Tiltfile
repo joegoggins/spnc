@@ -8,9 +8,10 @@ if k8s_context() != 'kind-sp-local':
          "Run: kind export kubeconfig --name sp-local").format(k8s_context())
     )
 
-# Image ref must match the chart's image (globals.image.app_ui.repository) so
-# Tilt injects the locally-built image instead of pulling from GHCR.
+# Image refs must match the charts' images (globals.image.*.repository) so Tilt
+# injects the locally-built images instead of pulling from GHCR.
 docker_build('ghcr.io/joegoggins/collabornet-app-ui', 'services/app-ui')
+docker_build('ghcr.io/joegoggins/collabornet-app-api', 'services/app-api')
 
 # Render helmfile to raw manifests so Tilt manages resources directly.
 # We intentionally bypass `helmfile apply` here — Tilt's k8s_yaml gives us
@@ -37,5 +38,14 @@ k8s_resource(
     'app-ui',
     port_forwards='5173:80',
     links=['http://localhost:5173'],
+    labels=['core-service'],
+)
+
+# app-api on localhost:8000 for hitting the JSON API directly (e.g. /sites,
+# /docs). app-ui's nginx also reaches it in-cluster via appUi.apiUpstream.
+k8s_resource(
+    'app-api',
+    port_forwards='8000:80',
+    links=['http://localhost:8000'],
     labels=['core-service'],
 )
