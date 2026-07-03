@@ -78,6 +78,52 @@ helmfile -e sp-staging diff  -l name=cloudflared
 helmfile -e sp-staging apply -l name=cloudflared
 ```
 
+## Setup private github pull token + secrets
+
+The app images live in a **private** GHCR package, so the cluster needs a pull
+credential: a `read:packages` PAT, stored SOPS-encrypted and rendered into a
+`dockerconfigjson` Secret by the `container-registry-credentials` release, then
+attached to the app pods as an `imagePullSecret` (see `imagePullSecrets` in
+`environments/globals.yaml.gotmpl`).
+
+1. Create a **classic** PAT with only the `read:packages` scope: GitHub → Settings
+   → Developer settings → Personal access tokens → Tokens (classic) → Generate.
+   Nothing else needs it — keep the scope minimal.
+
+2. Write it into the SOPS-encrypted secret. The PAT is entered at a hidden prompt
+   and only ciphertext is written (never commit plaintext). `server`/`username`
+   come from the chart, so only `password` is secret: (Sub for TBD)
+
+   ```sh
+   export SOPS_AGE_KEY_FILE=$HOME/.config/sops/age/keys.txt
+   cd projects/collabornet/deploy/helmfile
+   export GHCR_PAT=TBD
+   f=environments/sp-staging/secrets/container-registry-credentials.yaml
+   printf 'password: %s\n' "$GHCR_PAT" > "$f"
+   sops --config .sops.yaml -e -i "$f"
+   unset GHCR_PAT
+   sops -d "$f" >/dev/null && echo "encrypted + decrypts OK"
+   ```
+
+3. Create the Secret in the cluster:
+
+   ```sh
+   export KUBECONFIG=~/.kube/gaia.yaml
+   helmfile -e sp-staging diff -l name=container-registry-credentials
+   helmfile -e sp-staging apply -l name=container-registry-credentials
+   kubectl -n sp-staging get secret container-registry-credentials   # kubernetes.io/dockerconfigjson
+   ```
+
+**Ordering — so you never lock the cluster out:** create this secret and deploy
+app-ui (below) *while the package is still public*, then flip the package to
+Private, then `kubectl -n sp-staging rollout restart deploy/app-ui` and confirm it
+still pulls. Package visibility toggle:
+<https://github.com/users/joegoggins/packages/container/collabornet-app-ui/settings>
+
+To rotate the PAT later: regenerate it, re-run step 2, `helmfile apply` the
+release, then `kubectl -n sp-staging rollout restart deploy/app-ui`.
+
+
 ## Deploy App UI
 
 nginx hello-world placeholder behind `collabornet.japoofis.com` (later: the real

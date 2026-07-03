@@ -4,3 +4,6 @@ image:
 
 resources:
   {{- toYaml .Values.resources.app_ui | nindent 2 }}
+
+imagePullSecrets:
+  {{- toYaml .Values.imagePullSecrets | nindent 2 }}

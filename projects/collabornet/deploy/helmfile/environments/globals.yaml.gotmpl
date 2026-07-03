@@ -16,3 +16,8 @@ resources:
 
 cloudflared:
   credentialsSecretName: cloudflared-credentials
+
+# imagePullSecret for private GHCR pulls; created by the
+# container-registry-credentials release from a SOPS-encrypted read:packages PAT.
+imagePullSecrets:
+  - name: container-registry-credentials

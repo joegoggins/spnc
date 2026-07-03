@@ -9,3 +9,6 @@ image:
   pullPolicy: Always
 
 resources: {}
+
+# Populated from globals (helmfile) for private GHCR pulls.
+imagePullSecrets: []

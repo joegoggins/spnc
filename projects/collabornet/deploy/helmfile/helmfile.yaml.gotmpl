@@ -18,12 +18,24 @@ templates:
         args: ["{{`{{ .Environment.Name }}`}}"]
 
 releases:
+{{- if eq .Environment.Name "sp-staging" }}
+  # container-registry-credentials — dockerconfigjson Secret for pulling the
+  # private GHCR image. The read:packages PAT is supplied SOPS-encrypted.
+  - name: container-registry-credentials
+    chart: charts/container-registry-credentials
+    inherit:
+      - template: appRelease
+    secrets:
+      - environments/sp-staging/secrets/container-registry-credentials.yaml
+
   # cloudflared — the only HTTPS ingress into the cluster. Tunnel creds come from
   # the SOPS-encrypted env secret (environments/sp-staging/secrets/cloudflared.yaml).
+  # Remote-only: sp-local reaches app-ui via kind's extraPortMappings, so no tunnel.
   - name: cloudflared
     chart: charts/cloudflared
     inherit:
       - template: appRelease
+{{- end }}
 
   # app-ui — nginx hello-world placeholder; cloudflared routes
   # collabornet.japoofis.com to this Service. Swapped for the real React image
