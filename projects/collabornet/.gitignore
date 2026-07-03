@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# uv-managed virtualenv (recreated by `uv run` / `make test`)
+.venv/
+
+# Omit giant tiff files
+analysis/make-a-map-manually/exports
