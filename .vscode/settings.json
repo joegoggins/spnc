@@ -1,0 +1,9 @@
+{
+  "// note": "stories/ are tracked in git and read by AI agents on purpose; these excludes only quiet the human IDE surface (search + quick-open), not git or CLI tools.",
+  "search.exclude": {
+    "**/stories/**": true
+  },
+  "files.watcherExclude": {
+    "**/stories/**": true
+  }
+}
