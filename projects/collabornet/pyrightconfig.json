@@ -1,0 +1,14 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "typeCheckingMode": "basic",
+  "include": [
+    "services/app-api"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "**/.venv",
+    "services/app-api/alembic/versions",
+    "experiments"
+  ]
+}
