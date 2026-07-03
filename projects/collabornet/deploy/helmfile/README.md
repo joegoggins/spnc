@@ -139,3 +139,30 @@ hostname per service, this is a *single* record for the whole platform; `/radius
 `/api`, etc. add no new DNS. So there's essentially one CNAME to own. If you ever
 want it declarative, model it as a `cloudflare_record` in Terraform/OpenTofu — but
 for one record that's usually overkill vs. this one-liner.
+
+## Deploy App API
+
+FastAPI (uvicorn) JSON API. It has **no ingress of its own** — cloudflared routes
+everything for `collabornet.japoofis.com` to app-ui, whose nginx reverse-proxies
+`/api/*` to this Service (prefix stripped: `/api` → app-api `/`, `/api/sites` →
+app-api `/sites`). Staging-only for now (it needs the private-GHCR pull secret).
+
+Images are built + pushed by CI (`.github/workflows/app-api.yml`) on every push to
+`main` touching `services/app-api/**`, tagged `deploy-main` (same pattern as
+app-ui). Deploy the current `deploy-main`:
+
+```sh
+export KUBECONFIG=~/.kube/gaia.yaml
+export SOPS_AGE_KEY_FILE=$HOME/.config/sops/age/keys.txt
+cd projects/collabornet/deploy/helmfile
+
+helmfile -e sp-staging diff  -l name=app-api
+helmfile -e sp-staging apply -l name=app-api
+```
+
+### Validate
+
+```sh
+curl -sS https://collabornet.japoofis.com/api        # -> "OK"
+curl -sS https://collabornet.japoofis.com/api/sites   # -> [{"name":"Demo Site"}]
+```

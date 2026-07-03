@@ -17,3 +17,9 @@ cloudflared:
 image:
   app_ui:
     tag: deploy-main
+  app_api:
+    tag: deploy-main
+
+# app-ui nginx proxies /api to the app-api Service in this namespace.
+appUi:
+  apiUpstream: "app-api.{{ .Environment.Name }}.svc.cluster.local:80"

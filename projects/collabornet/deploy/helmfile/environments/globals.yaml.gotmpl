@@ -9,10 +9,19 @@ image:
   app_ui:
     repository: ghcr.io/joegoggins/collabornet-app-ui
     tag: "0.1.0"
+  app_api:
+    repository: ghcr.io/joegoggins/collabornet-app-api
+    tag: "0.1.0"
 
 resources:
   cloudflared: { requests: { cpu: 25m, memory: 64Mi }, limits: {} }
   app_ui:      { requests: { cpu: 50m, memory: 64Mi }, limits: {} }
+  app_api:     { requests: { cpu: 50m, memory: 64Mi }, limits: {} }
+
+# app-ui's nginx proxies /api to this in-cluster app-api Service. Set per-env
+# (empty here); sp-staging points it at app-api.sp-staging.svc.cluster.local.
+appUi:
+  apiUpstream: ""
 
 cloudflared:
   credentialsSecretName: cloudflared-credentials

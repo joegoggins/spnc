@@ -1,0 +1,15 @@
+#!/bin/sh
+# Sourced by nginx:alpine's docker-entrypoint BEFORE the envsubst templating step
+# (files here must be executable or the entrypoint ignores them). Provides the two
+# variables nginx.conf.template needs:
+#   NGINX_RESOLVER    - cluster DNS, so nginx can lazily resolve the /api upstream
+#   APP_API_UPSTREAM  - host:port of the app-api Service (overridable via env;
+#                       set per-namespace by the helm chart)
+# Reading the resolver from resolv.conf keeps this portable across clusters
+# (kind and k3s use different kube-dns ClusterIPs).
+NGINX_RESOLVER="$(awk '/^nameserver/ { print $2; exit }' /etc/resolv.conf 2>/dev/null)"
+: "${NGINX_RESOLVER:=127.0.0.11}"
+export NGINX_RESOLVER
+
+: "${APP_API_UPSTREAM:=app-api.sp-staging.svc.cluster.local:80}"
+export APP_API_UPSTREAM

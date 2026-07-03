@@ -35,11 +35,19 @@ releases:
     chart: charts/cloudflared
     inherit:
       - template: appRelease
+
+  # app-api — FastAPI (uvicorn) JSON API. No ingress of its own; app-ui's nginx
+  # reverse-proxies /api/* to it. Needs the private-GHCR pull secret, so it's
+  # staging-only for now (local dev runs app-ui alone; Vite proxies /api).
+  - name: app-api
+    chart: charts/app-api
+    inherit:
+      - template: appRelease
 {{- end }}
 
-  # app-ui — nginx hello-world placeholder; cloudflared routes
-  # collabornet.japoofis.com to this Service. Swapped for the real React image
-  # (serving /, /radius, and an /api proxy to app-api) in a later increment.
+  # app-ui — React SPA (Vite) behind nginx. cloudflared routes
+  # collabornet.japoofis.com to this Service; nginx serves /, /radius, and
+  # reverse-proxies /api/* to the app-api Service.
   - name: app-ui
     chart: charts/app-ui
     inherit:
