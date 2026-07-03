@@ -1,0 +1,41 @@
+# Belt: only ever interact with the sp-local kind cluster; Tiltfile is NOT for remote clusters right now
+allow_k8s_contexts('kind-sp-local')
+
+# Suspenders: refuse to proceed if the wrong context is active.
+if k8s_context() != 'kind-sp-local':
+    fail(
+        ("Tilt expects kubectl context 'kind-sp-local' (current: '{}'). " +
+         "Run: kind export kubeconfig --name sp-local").format(k8s_context())
+    )
+
+# Image ref must match the chart's image (globals.image.app_ui.repository) so
+# Tilt injects the locally-built image instead of pulling from GHCR.
+docker_build('ghcr.io/joegoggins/collabornet-app-ui', 'services/app-ui')
+
+# Render helmfile to raw manifests so Tilt manages resources directly.
+# We intentionally bypass `helmfile apply` here — Tilt's k8s_yaml gives us
+# image-ref rewriting and live diffing that helm releases would obscure.
+# The same charts and values are used by `helmfile apply` for remote deploys.
+#
+# sp-local renders only the app-ui release (cloudflared and the registry-creds
+# Secret are gated to sp-staging in helmfile.yaml.gotmpl). Chart templates carry
+# no metadata.namespace, so everything lands in the default namespace locally —
+# which is all we need for a single kind cluster.
+helmfile_yaml = local(
+    'helmfile -e sp-local template',
+    dir='deploy/helmfile',
+    quiet=True,
+    echo_off=True,
+)
+k8s_yaml(helmfile_yaml)
+
+# Tilt runs `kubectl port-forward` for the duration of `tilt up`, bridging
+# localhost:5173 -> the pod's port 80. This bypasses kind's extraPortMappings
+# (which target NodePorts we don't create) and keeps the chart Service a vanilla
+# ClusterIP, matching how cloudflared reaches it on remote clusters.
+k8s_resource(
+    'app-ui',
+    port_forwards='5173:80',
+    links=['http://localhost:5173'],
+    labels=['core-service'],
+)

@@ -1,0 +1,8 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  # No extraPortMappings: host access to workloads is via Tilt `port_forwards`
+  # in the Tiltfile (e.g. app-ui 5173:80), which tunnel through the API server
+  # to the pod and need no NodePort. Add a k8s_resource port_forward there
+  # rather than a mapping here — mappings are fixed at cluster-create time.
+  - role: control-plane
