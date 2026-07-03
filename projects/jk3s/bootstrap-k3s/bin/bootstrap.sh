@@ -18,8 +18,9 @@
 # Both JK3S_HOST_IP and JK3S_TAILSCALE_DNS are baked into the k3s API cert as --tls-san, so the
 # cluster is reachable by LAN IP now and by Tailscale name later with no cert regeneration.
 #
-# Two-pass + idempotent: the first run sets the memory-cgroup kernel args and stops for a
-# reboot (see README); after you reboot, re-run to install k3s and fetch the kubeconfig.
+# Two-pass + idempotent: the first run enables the persistent journal and sets the kernel args
+# (memory cgroup + NVMe/PCIe stability), then stops for a reboot (see README); after you reboot,
+# re-run to install k3s and fetch the kubeconfig.
 set -euo pipefail
 
 : "${JK3S_HOST_IP:?set JK3S_HOST_IP (the Pi LAN IP)}"
@@ -63,70 +64,84 @@ case "$ROOT_SRC" in
   *)      echo "!! root is ${ROOT_SRC:-unknown}, not NVMe — finish setup-hardware first" >&2; exit 1 ;;
 esac
 
-echo "==> memory cgroup"
-# Requires cgroup v2 (Raspberry Pi OS Lite, Bookworm+): the memory controller is enabled iff it
-# is listed in cgroup.controllers.
-if remote 'grep -qw memory /sys/fs/cgroup/cgroup.controllers'; then
-  echo "    enabled"
+echo "==> persistent journal (so a crash boot's kernel log survives the reboot)"
+# The Pi 5 + DRAM-less NVMe read-only-remount outage (SPNC-0005) leaves no trace unless the journal
+# is persistent — sshd dies with root read-only, so evidence is only readable from the *previous*
+# boot after a reboot. `Storage=auto` did NOT promote on this Pi OS build; force it via a drop-in.
+# Enabled here (not gated on a crash) so the very first stall on a fresh box is diagnosable.
+remote 'sudo bash -s' <<'EOF'
+set -uo pipefail
+d=/etc/systemd/journald.conf.d; f="$d/persistent.conf"
+mkdir -p "$d" /var/log/journal
+if grep -qs '^Storage=persistent' "$f"; then
+  echo "    already persistent"
 else
-  if remote 'grep -q cgroup_memory=1 /boot/firmware/cmdline.txt'; then
-    echo "!! cmdline already has the args but the memory cgroup is still off after reboot." >&2
-    echo "   Known Pi5/Bookworm DTB issue (k3s-io/k3s#9524) — see README Notes." >&2
-    exit 1
-  fi
-  echo "    setting kernel args on /boot/firmware/cmdline.txt ..."
-  remote "sudo sed -i 's/\$/ cgroup_memory=1 cgroup_enable=memory/' /boot/firmware/cmdline.txt"
+  printf '[Journal]\nStorage=persistent\n' > "$f"
+  systemctl restart systemd-journald
+  journalctl --flush >/dev/null 2>&1 || true
+  echo "    enabled (Storage=persistent)"
+fi
+EOF
+
+echo "==> kernel args (memory cgroup + NVMe/PCIe stability)"
+# Both classes live on the single-line /boot/firmware/cmdline.txt:
+#   cgroup_memory=1 cgroup_enable=memory     -> k3s needs the cgroup v2 memory controller
+#   nvme_core.default_ps_max_latency_us=0    -> NVMe APST off
+#   pcie_aspm=off  pcie_port_pm=off          -> PCIe ASPM + port power-management off
+# The NVMe/PCIe flags disable the low-power states the Pi 5 + DRAM-less NVMe combo stalls on under
+# write load (root cause of the `earth` read-only-remount outage, SPNC-0005). They cost a little idle
+# power, never throughput — so they are safe to default, and codifying them means a fresh box is
+# hardened from first boot. The throughput-costing / drive-specific rungs (PCIe Gen1, HMB off) are
+# NOT auto-applied — those stay evidence-gated in the README "NVMe stability" ladder.
+#
+# This fleet is DRAM-less by design: every box is an Inland TN320 (same drive as `earth`), so the
+# three NVMe/PCIe flags are applied UNCONDITIONALLY — the DRAM-less/HMB drive is the whole reason
+# they're needed. IF YOU EVER BUILD ON A DRAM-CACHE NVMe (Layer 3a) instead: drop those three flags
+# and keep only `cgroup_memory=1 cgroup_enable=memory` — a DRAM drive doesn't stall on the low-power
+# states, so it runs stock. Don't make this branch on the drive; just edit `needed` below if that day comes.
+CHANGED="$(remote 'sudo bash -s' <<'EOF'
+set -uo pipefail
+f=/boot/firmware/cmdline.txt
+needed=(cgroup_memory=1 cgroup_enable=memory nvme_core.default_ps_max_latency_us=0 pcie_aspm=off pcie_port_pm=off)
+line="$(tr '\n' ' ' < "$f")"           # cmdline.txt is a single line; fold any stray newline
+declare -A have=()
+for tok in $line; do have["$tok"]=1; done
+add=()
+for a in "${needed[@]}"; do [ -n "${have[$a]:-}" ] || add+=("$a"); done
+if [ "${#add[@]}" -gt 0 ]; then
+  cp -a "$f" "$f.bak.$(date +%Y%m%d-%H%M%S)"
+  printf '%s %s\n' "${line% }" "${add[*]}" > "$f"   # keep it one line: append the missing args
+  echo CHANGED
+else
+  echo OK
+fi
+EOF
+)"
+if [ "$CHANGED" = CHANGED ]; then
+  echo "    added missing kernel args to /boot/firmware/cmdline.txt (timestamped backup alongside)"
   echo
-  echo ">>> Kernel args set. Reboot the Pi and re-run this script. <<<"
+  echo ">>> Kernel args set. Reboot the Pi, wait ~30s, then re-run this script: <<<"
+  echo ">>>   ssh -i \"\$JK3S_SSH_KEY_PATH\" \"\$JK3S_USERNAME@\$JK3S_HOST_IP\" sudo reboot   <<<"
   exit 0
 fi
+echo "    cmdline args present"
+# The memory cgroup must actually be ACTIVE, not merely requested: the Pi5/Bookworm DTB has
+# historically re-disabled the memory controller even with the arg set. Check cgroup.controllers
+# (cgroup v2), not /proc/cgroups (which omits memory under v2).
+if ! remote 'grep -qw memory /sys/fs/cgroup/cgroup.controllers'; then
+  echo "!! cmdline has the args but the memory cgroup is still off after reboot." >&2
+  echo "   Known Pi5/Bookworm DTB issue (k3s-io/k3s#9524) — see README Notes." >&2
+  exit 1
+fi
+echo "    memory cgroup: enabled"
 
 # ------------------------------------------------------------------------------
-# TODO(nvme-stability): ESCALATION LADDER for the Pi 5 + DRAM-less NVMe read-only
-# outages (refs: collabornet/stories/SPNC-0005, joe-notes .../crash-drive-goes-read-only.md).
-#
-# Failure mode: Inland TN320 (DRAM-less/HMB, Realtek RTS5765DL) stalls over the Pi 5
-# PCIe link under write load -> nvme driver returns EIO -> ext4 aborts journal ->
-# root remounts read-only -> k3s/sshd/dhcpcd die (box still pings via resident tailscaled,
-# but is wedged). SMART clean (0 media_errors) => transport stall, not media failure.
-# NOT auto-applied here: climb only as far as needed, and let journal evidence pick the rung.
-#
-# EACH recurrence, FIRST capture what the transport actually did (persistent journal is on,
-# so the crash boot survives the reboot):
-#     sudo journalctl -k -b -1 | grep -iE 'nvme|pcie|aer|ext4|under-voltage|read-only'
-#     vcgencmd get_throttled          # bit 16 (0x10000) set == undervoltage occurred
-#   'nvme .* reset'/timeout      => link/drive     -> Layer 1a (Gen1), then Layer 3a (DRAM drive)
-#   'PCIe.*AER'/Correctable/Fatal=> signal integrity-> Layer 1a (Gen1) / reseat FPC / Layer 3
-#   under-voltage / bit 16 set   => power           -> Layer 2
-#
-# Layer 0  DONE 2026-07-01, INSUFFICIENT (recurred same evening under `helmfile apply` load):
-#     /boot/firmware/cmdline.txt:  nvme_core.default_ps_max_latency_us=0 pcie_aspm=off  (APST+ASPM off)
-#     Persistent journal enabled (drop-in): printf '[Journal]\nStorage=persistent\n' \
-#       | sudo tee /etc/systemd/journald.conf.d/persistent.conf; then mkdir /var/log/journal + restart journald.
-#
-# Layer 1  remaining FREE config levers (edit, reboot, then re-run a real deploy under the watch above):
-#   a. Force PCIe Gen1 — biggest untried lever, relaxes FPC signal integrity (currently links Gen2/5.0GT/s):
-#          /boot/firmware/config.txt:  dtparam=pciex1_gen=1     # (verify param vs current RPi docs)
-#   b. cmdline.txt: add  pcie_port_pm=off   (complements pcie_aspm=off)
-#   c. Experiment: HMB off  nvme.max_host_mem_size_mb=0  (DRAM-less drives vary — try with/without)
-#
-# Layer 2  power (their own notes: "underpowered supplies are a top cause of flaky NVMe"):
-#   Confirm official RPi 27W USB-C PD (NOT PoE; never both). If throttled bit 16 ever sets, this IS
-#   the cause -> better PSU / shed peripherals. (Active cooler already fitted; temps were fine.)
-#
-# Layer 3  swap the storage medium — the "make it just work" fixes (pick one):
-#   a. DRAM-equipped NVMe from a Pi-5-known-good list (e.g. Jeff Geerling's pipci). Removes the
-#      DRAM-less/HMB stall class ENTIRELY and makes Layer 0/1 workarounds unnecessary. Caveats:
-#      DRAM drives draw MORE power (do Layer 2 first) and won't help a PCIe-signal fault (Layer 1)
-#      -> so gate the purchase on the journal evidence above.
-#   b. Boot from a USB3 SSD (UASP) instead of NVMe: bypasses the PCIe/FPC path entirely, proven
-#      stable, at throughput cost. Surest single-node fix; if a DRAM NVMe *still* stalls, that
-#      implicates the HAT/FPC/board, not the drive.
-#
-# Layer 4  ARCHITECTURE — the real production answer, folds into the SPNC-0006 mini-rack:
-#   Single-node k3s on flaky storage is inherently fragile (one drive fault = whole cluster down).
-#   Go multi-node HA: 3 server nodes w/ embedded etcd so one node's storage death doesn't kill the
-#   API; add restic/Velero backups (SPNC-0005). Survive storage faults instead of preventing each one.
+# NVMe/PCIe stability: the proven Layer 0/1 power-state flags are applied above (kernel-args step)
+# and the persistent journal is enabled, so a fresh box is hardened from first boot and any future
+# crash boot is diagnosable. If a box STILL remounts root read-only under load, don't guess —
+# run `bin/nvme-recon.sh` to capture the transport evidence, then climb the escalation ladder in
+# bootstrap-k3s/README.md ("NVMe stability"). The Inland TN320 is DRAM-less; the durable fix is a
+# DRAM-equipped NVMe. Refs: SPNC-0005; incident joe-notes/.../crash-drive-goes-read-only.md.
 # ------------------------------------------------------------------------------
 
 if [[ -n "${JK3S_K3S_VERSION:-}" ]]; then

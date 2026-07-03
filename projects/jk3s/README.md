@@ -7,7 +7,10 @@ A small, reusable tool to provision **one Raspberry Pi 5 (NVMe/PCIe boot)** into
 Each sub-directory provides a core component to the build, details in each README describe how to use them. They should be executed in this sequence:
 
 1. `setup-hardware`: Purchase and assemble the hardware. Provision RPi OS on the hardware. Boot from NVMe/PCIe. Configure static LAN IP/DHCP reservation.
-1. `bootstrap-k3s`: Provision k3s on RPi in stripped down mode
+1. `bootstrap-k3s`: Provision k3s on RPi in stripped down mode. Also auto-applies the NVMe/PCIe
+   stability defaults for the DRAM-less TN320 and ships `bin/nvme-recon.sh` — see
+   [bootstrap-k3s/README.md → NVMe stability](bootstrap-k3s/README.md#nvme-stability) if a node ever
+   remounts root read-only under load.
 1. `helmfile-base`: Deploy CloudFlared Tunnel and hello world http service
 
 After this sequence of projects is worked. "hello world" content should be available at some `https://example.com` endpoint.
