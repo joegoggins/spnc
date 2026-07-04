@@ -1,10 +1,50 @@
+import type { CSSProperties } from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
+import mapBg from './assets/radius-map-bg.jpg'
+
+const STEPS = [
+  { n: 1, text: 'Make a map.' },
+  { n: 2, text: 'Print it big.' },
+  { n: 3, text: 'Frame it, hang it, make it look cool.' },
+]
 
 function Home() {
   return (
-    <section>
-      <h1>hello world</h1>
-      <p>Collabornet app-ui — React + Vite, served from k3s (gaia) via Cloudflare Tunnel.</p>
+    <section
+      className="home-hero"
+      style={{ '--hero-bg': `url(${mapBg})` } as CSSProperties}
+    >
+      <div className="hero-content">
+        <h1>Radius of Stewardship</h1>
+
+        <p className="hero-lead">
+          Rebuilding the world begins by declaring stewardship over the
+          immediate area where you live.
+        </p>
+        <p className="hero-sub">
+          Focus on building relationships with the people, businesses, and
+          organizations physically closest to you.
+        </p>
+
+        <ol className="steps">
+          {STEPS.map((s) => (
+            <li key={s.n} className="step">
+              <span className="step-n">{s.n}</span>
+              <span className="step-text">{s.text}</span>
+            </li>
+          ))}
+        </ol>
+
+        <p className="hero-sub">
+          Every day, when you see it, it will help you anchor where you are.
+          Over time, put pins on it, annotate it, draw on it &mdash; turn it
+          into something alive, embedded with stories.
+        </p>
+
+        <Link to="/radius" className="cta">
+          Get Started
+        </Link>
+      </div>
     </section>
   )
 }

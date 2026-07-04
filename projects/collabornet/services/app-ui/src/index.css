@@ -11,6 +11,13 @@
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
+  /* Radius-of-Stewardship home page */
+  --leaf: #3f8f5b;
+  --leaf-glow: rgba(63, 143, 91, 0.28);
+  /* readability scrim over the blurred map; light in light mode */
+  --scrim: rgba(255, 255, 255, 0.62);
+  --scrim-soft: rgba(255, 255, 255, 0.32);
+
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
@@ -43,6 +50,12 @@
     --social-bg: rgba(47, 48, 58, 0.5);
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+
+    --leaf: #6fce8f;
+    --leaf-glow: rgba(111, 206, 143, 0.22);
+    /* dark scrim so light text reads over the light map photo */
+    --scrim: rgba(18, 19, 24, 0.72);
+    --scrim-soft: rgba(18, 19, 24, 0.4);
   }
 
   #social .button-icon {
@@ -108,4 +121,152 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+/* ── Radius of Stewardship: home hero ─────────────────────────────
+   The map background is a deliberately low-detail, EXIF-stripped JPEG
+   (street labels + handwriting already destroyed at the pixel level).
+   The blur/opacity below are purely aesthetic — the shipped file can't
+   reveal the exact location even if pulled straight from the network. */
+.home-hero {
+  position: relative;
+  isolation: isolate; /* keep the -z layers scoped to this section */
+  flex: 1; /* fill the remaining height of the #root flex column */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(40px, 6vw, 88px) clamp(20px, 5vw, 64px);
+  overflow: hidden;
+  text-align: center;
+}
+
+/* blurred, faded map layer */
+.home-hero::before {
+  content: '';
+  position: absolute;
+  inset: -40px; /* bleed so blurred edges never expose a hard border */
+  background: var(--hero-bg) center / cover no-repeat;
+  filter: blur(6px) saturate(0.85);
+  transform: scale(1.05);
+  z-index: -2;
+}
+
+/* readability scrim + soft leafy vignette so text never competes with the map */
+.home-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      120% 90% at 50% 42%,
+      var(--scrim-soft) 0%,
+      var(--scrim) 58%,
+      var(--scrim) 100%
+    ),
+    radial-gradient(
+      140% 120% at 50% 50%,
+      transparent 55%,
+      var(--leaf-glow) 100%
+    );
+  z-index: -1;
+}
+
+.hero-content {
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.hero-content h1 {
+  margin: 0 0 4px;
+}
+
+.hero-lead {
+  font-size: 24px;
+  line-height: 132%;
+  font-weight: 500;
+  color: var(--text-h);
+  letter-spacing: -0.2px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+
+.hero-sub {
+  font-size: 17px;
+  line-height: 150%;
+  max-width: 560px;
+}
+
+.steps {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.step {
+  flex: 1 1 180px;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 16px;
+  border-radius: 12px;
+  background: var(--scrim-soft);
+  border: 1px solid var(--accent-border);
+  border-color: var(--leaf-glow);
+  backdrop-filter: blur(2px);
+}
+
+.step-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--leaf);
+  color: #fff;
+  font-weight: 600;
+  font-size: 17px;
+}
+
+.step-text {
+  color: var(--text-h);
+  font-weight: 500;
+  line-height: 128%;
+}
+
+.cta {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 14px 32px;
+  border-radius: 999px;
+  background: var(--leaf);
+  color: #fff;
+  font-weight: 600;
+  font-size: 18px;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+  transition:
+    transform 0.12s ease,
+    filter 0.12s ease;
+}
+
+.cta:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.cta:active {
+  transform: translateY(0);
 }
