@@ -1,6 +1,8 @@
 import type { CSSProperties } from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
 import mapBg from './assets/radius-map-bg.jpg'
+import { NewCollabWizard } from './collab/NewCollabWizard'
+import { CollabHome } from './collab/CollabHome'
 
 const STEPS = [
   { n: 1, text: 'Make a map.' },
@@ -41,7 +43,7 @@ function Home() {
           into something alive, embedded with stories.
         </p>
 
-        <Link to="/radius" className="cta">
+        <Link to="/collab/new" className="cta">
           Get Started
         </Link>
       </div>
@@ -67,6 +69,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/radius" element={<Radius />} />
+        <Route path="/collab/new" element={<NewCollabWizard />} />
+        <Route path="/collab/:slug" element={<CollabHome />} />
       </Routes>
     </>
   )
