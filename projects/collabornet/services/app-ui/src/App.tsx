@@ -47,7 +47,7 @@ function Home() {
         <p className="hero-sub">
           Add points to the digital map (like fruit trees),
           create sub-regions (like community gardens),
-          invite neighbors to apply tools, skills, and knowledge to steward
+          and invite neighbors to apply tools, skills, and knowledge to steward
           resources collaboratively.
         </p>
 
