@@ -1,8 +1,10 @@
 import type { CSSProperties } from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
 import mapBg from './assets/radius-map-bg.jpg'
+import { NavMenu } from './NavMenu'
 import { NewCollabWizard } from './collab/NewCollabWizard'
 import { CollabHome } from './collab/CollabHome'
+import { CollabsList } from './collab/CollabsList'
 
 const STEPS = [
   { n: 1, text: 'Make a map.' },
@@ -24,8 +26,7 @@ function Home() {
           immediate area where you live.
         </p>
         <p className="hero-sub">
-          Focus on building relationships with the people, businesses, and
-          organizations physically closest to you.
+          Build with people and resources physically closest to you.
         </p>
 
         <ol className="steps">
@@ -41,6 +42,13 @@ function Home() {
           Every day, when you see it, it will help you anchor where you are.
           Over time, put pins on it, annotate it, draw on it &mdash; turn it
           into something alive, embedded with stories.
+        </p>
+
+        <p className="hero-sub">
+          Add points to the digital map (like fruit trees),
+          create sub-regions (like community gardens),
+          invite neighbors to apply tools, skills, and knowledge to steward
+          resources collaboratively.
         </p>
 
         <Link to="/collab/new" className="cta">
@@ -60,15 +68,44 @@ function Radius() {
   )
 }
 
+function Settings() {
+  return (
+    <section className="settings-page">
+      <h1>Settings</h1>
+      <p className="settings-note">
+        Account and site settings will live here. Placeholder for now.
+      </p>
+      <div className="settings-group">
+        <label className="field">
+          <span className="field-label">Display name</span>
+          <input className="text-input" placeholder="Coming soon" disabled />
+        </label>
+        <label className="field">
+          <span className="field-label">Email</span>
+          <input className="text-input" placeholder="Coming soon" disabled />
+        </label>
+      </div>
+    </section>
+  )
+}
+
 export default function App() {
   return (
     <>
-      <nav style={{ padding: '1rem' }}>
-        <Link to="/">Home</Link> · <Link to="/radius">Radius of Stewardship</Link>
-      </nav>
+      <header className="topbar">
+        <Link to="/" className="brand" aria-label="Home">
+          <span className="brand-mark" aria-hidden="true">
+            🌱
+          </span>
+          <span className="brand-name">Collabornet</span>
+        </Link>
+        <NavMenu />
+      </header>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/radius" element={<Radius />} />
+        <Route path="/collabs" element={<CollabsList />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="/collab/new" element={<NewCollabWizard />} />
         <Route path="/collab/:slug" element={<CollabHome />} />
       </Routes>

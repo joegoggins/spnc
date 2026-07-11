@@ -96,6 +96,13 @@ export function loadSite(slug: string): CollabSite | null {
   return readAll()[slug] ?? null
 }
 
+/** All sites this browser has created, newest first. */
+export function listSites(): CollabSite[] {
+  return Object.values(readAll()).sort((a, b) =>
+    b.createdAt.localeCompare(a.createdAt),
+  )
+}
+
 // ── formatting helpers ───────────────────────────────────────────────────────
 export function formatDistance(meters: number): string {
   const miles = meters / 1609.34

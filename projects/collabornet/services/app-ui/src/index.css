@@ -621,3 +621,195 @@ code {
 .md a {
   color: var(--leaf);
 }
+
+/* ── Top bar + hamburger menu ────────────────────────────────────── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px clamp(14px, 3vw, 24px);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--text-h);
+  font-weight: 600;
+}
+.brand-mark {
+  font-size: 20px;
+  line-height: 1;
+}
+.brand-name {
+  letter-spacing: -0.2px;
+}
+
+.nav-menu {
+  position: relative;
+}
+.hamburger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: var(--text-h);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.hamburger:hover,
+.hamburger[aria-expanded='true'] {
+  background: var(--code-bg);
+}
+.menu-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 2000;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--text-h);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.menu-item:hover {
+  background: var(--leaf-glow);
+  color: var(--text-h);
+}
+.menu-divider {
+  height: 1px;
+  margin: 6px 8px;
+  background: var(--border);
+}
+
+/* ── /collabs list ───────────────────────────────────────────────── */
+.collabs-page {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px clamp(16px, 4vw, 40px) 48px;
+  text-align: left;
+  box-sizing: border-box;
+}
+.collabs-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.collabs-head h1 {
+  margin: 0;
+  font-size: 34px;
+}
+.collabs-head .cta {
+  padding: 10px 20px;
+  font-size: 16px;
+  white-space: nowrap;
+}
+.collabs-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 48px 24px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  text-align: center;
+}
+.collab-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.collab-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+.collab-card:hover {
+  border-color: var(--leaf);
+  box-shadow: var(--shadow);
+}
+.collab-card h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+.collab-card-meta {
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--mono);
+}
+.role-badge {
+  flex: none;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--leaf-glow);
+  color: var(--leaf);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── /settings placeholder ───────────────────────────────────────── */
+.settings-page {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 28px clamp(16px, 4vw, 40px) 48px;
+  text-align: left;
+  box-sizing: border-box;
+}
+.settings-page h1 {
+  margin: 0 0 8px;
+  font-size: 34px;
+}
+.settings-note {
+  color: var(--text);
+  margin-bottom: 24px;
+}
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
