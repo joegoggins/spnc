@@ -44,12 +44,27 @@ One-time per env — create the tunnel and SOPS-encrypt its credentials:
 export SOPS_AGE_KEY_FILE=$HOME/.config/sops/age/keys.txt
 cd projects/mspsolarpunk/deploy/helmfile
 cloudflared tunnel create wb-staging   # or wb-prod; note the UUID it prints
+UUID=<uuid-from-above>
 f=environments/wb-staging/secrets/cloudflared.yaml   # swap env as needed
-printf 'cloudflared:\n  tunnelId: %s\n  credentialsJson: %s\n' \
-  "<uuid>" "$(jq -c . "$HOME/.cloudflared/<uuid>.json")" > "$f"
+
+# credentialsJson must end up a YAML *string* holding the raw JSON, not a
+# nested mapping — `jq -Rs .` JSON-encodes it (adds quotes + escaping) so it
+# round-trips as a string. Skipping that step is what breaks cloudflared with
+# "invalid character 'm' looking for beginning of value" (Helm's `quote`
+# stringifying a Go map as `map[AccountTag:...]`).
+COMPACT="$(jq -c . "$HOME/.cloudflared/$UUID.json")"
+CREDS_JSON="$(printf '%s' "$COMPACT" | jq -Rs .)"
+printf 'cloudflared:\n  tunnelId: %s\n  credentialsJson: %s\n' "$UUID" "$CREDS_JSON" > "$f"
 sops --config .sops.yaml -e -i "$f"
 sops -d "$f" >/dev/null && echo "encrypted + decrypts OK"
 ```
+
+DNS (one-time):
+
+`cloudflared tunnel route dns <uuid> japoofis.com` (or
+`mspsolarpunk.com` for wb-prod) — a proxied apex record to
+`<uuid>.cfargotunnel.com`.
+
 
 Deploy:
 
@@ -60,9 +75,6 @@ helmfile -e wb-staging diff                # or -e wb-prod
 helmfile -e wb-staging apply
 ```
 
-DNS (one-time): `cloudflared tunnel route dns <uuid> japoofis.com` (or
-`mspsolarpunk.com` for wb-prod) — a proxied apex record to
-`<uuid>.cfargotunnel.com`.
 
 # Later
 
