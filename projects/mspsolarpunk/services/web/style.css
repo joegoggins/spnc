@@ -1,0 +1,55 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: url("/background.svg") center center / cover no-repeat;
+  padding: 1.5rem;
+}
+
+.card {
+  background: rgba(10, 20, 15, 0.55);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 1rem;
+  padding: 2.5rem 3rem;
+  max-width: 32rem;
+  text-align: center;
+  color: #f5f3e7;
+}
+
+.card h1 {
+  margin: 0 0 0.75rem;
+  font-size: 2.5rem;
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  margin: 0 0 1.5rem;
+  color: #d8e8d0;
+  line-height: 1.5;
+}
+
+.status {
+  display: inline-block;
+  margin: 0;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  background: #ffb703;
+  color: #22333b;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}

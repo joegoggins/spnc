@@ -1,0 +1,27 @@
+# Non-secret defaults shared across environments.
+# Secrets (cloudflared.tunnelId, cloudflared.credentialsJson) are merged in per-env
+# from environments/<env>/secrets/cloudflared.yaml (SOPS-encrypted; see .sops.yaml).
+
+image:
+  cloudflared:
+    repository: cloudflare/cloudflared
+    tag: "2025.6.1"
+  web:
+    # Public GHCR package — no imagePullSecret needed. wb-local overrides all
+    # three fields to build+load the image locally instead (see
+    # environments/wb-local/values.yaml.gotmpl).
+    repository: ghcr.io/joegoggins/mspsolarpunk-web
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+
+resources:
+  cloudflared: { requests: { cpu: 25m, memory: 64Mi }, limits: {} }
+  web:         { requests: { cpu: 25m, memory: 32Mi }, limits: {} }
+
+web:
+  service:
+    type: ClusterIP
+    nodePort: null
+
+cloudflared:
+  credentialsSecretName: cloudflared-credentials

@@ -1,0 +1,71 @@
+# About
+
+Helmfile deployment for mspsolarpunk's static site — plain HTML/CSS behind
+nginx, no API/DB. Same helmfile+sops+cloudflared pattern as
+[`collabornet/deploy/helmfile`](../../../collabornet/deploy/helmfile/README.md)
+(env prefix `wb-` instead of `sp-`) — see that README for the fuller
+walkthrough (sops/age setup, GHCR PAT secrets, etc.). This one stays brief.
+
+# Environments
+
+| env        | cluster ctx    | namespace  | public URL              | cloudflared      |
+|------------|----------------|------------|--------------------------|------------------|
+| wb-local   | kind-wb-local  | wb-local   | http://localhost:6174    | none — NodePort  |
+| wb-staging | gaia           | wb-staging | https://japoofis.com     | own tunnel       |
+| wb-prod    | hope-island    | wb-prod    | https://mspsolarpunk.com | own tunnel       |
+
+CI (`.github/workflows/mspsolarpunk-web.yml`) builds+pushes on every `main`
+push touching `services/web/**`. **One-time:** after its first run, set the
+`mspsolarpunk-web` GHCR package to public (Package settings → Change
+visibility) — it's a plain static site, and staying public means no
+imagePullSecret is wired up for wb-staging/wb-prod.
+
+# Local (wb-local)
+
+One command does everything: creates+targets the `wb-local` kind cluster
+(idempotent), builds `services/web` into an image, `kind load`s it, and
+deploys — see the `prepare` hook in `helmfile-hook-commands/`.
+
+```sh
+cd projects/mspsolarpunk/deploy/helmfile
+helmfile -e wb-local apply
+open http://localhost:6174
+```
+
+Teardown: `kind delete cluster --name wb-local`
+
+# Remote (wb-staging / wb-prod)
+
+Prereqs + sops/age setup: same as collabornet, see its README.
+
+One-time per env — create the tunnel and SOPS-encrypt its credentials:
+
+```sh
+export SOPS_AGE_KEY_FILE=$HOME/.config/sops/age/keys.txt
+cd projects/mspsolarpunk/deploy/helmfile
+cloudflared tunnel create wb-staging   # or wb-prod; note the UUID it prints
+f=environments/wb-staging/secrets/cloudflared.yaml   # swap env as needed
+printf 'cloudflared:\n  tunnelId: %s\n  credentialsJson: %s\n' \
+  "<uuid>" "$(jq -c . "$HOME/.cloudflared/<uuid>.json")" > "$f"
+sops --config .sops.yaml -e -i "$f"
+sops -d "$f" >/dev/null && echo "encrypted + decrypts OK"
+```
+
+Deploy:
+
+```sh
+export KUBECONFIG=~/.kube/gaia.yaml        # ~/.kube/hope-island.yaml for wb-prod
+export SOPS_AGE_KEY_FILE=$HOME/.config/sops/age/keys.txt
+helmfile -e wb-staging diff                # or -e wb-prod
+helmfile -e wb-staging apply
+```
+
+DNS (one-time): `cloudflared tunnel route dns <uuid> japoofis.com` (or
+`mspsolarpunk.com` for wb-prod) — a proxied apex record to
+`<uuid>.cfargotunnel.com`.
+
+# Later
+
+`gaia` ends up running two independent cloudflared tunnels (collabornet's +
+this one). Centralize into one shared tunnel for the cluster once there's a
+second real app to justify it.

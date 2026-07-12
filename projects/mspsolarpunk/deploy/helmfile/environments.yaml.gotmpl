@@ -1,0 +1,18 @@
+wb-local:
+  values:
+    - environments/globals.yaml.gotmpl
+    - environments/wb-local/values.yaml.gotmpl
+
+wb-staging:
+  values:
+    - environments/globals.yaml.gotmpl
+    - environments/wb-staging/values.yaml.gotmpl
+  secrets:
+    - environments/wb-staging/secrets/cloudflared.yaml
+
+wb-prod:
+  values:
+    - environments/globals.yaml.gotmpl
+    - environments/wb-prod/values.yaml.gotmpl
+  secrets:
+    - environments/wb-prod/secrets/cloudflared.yaml

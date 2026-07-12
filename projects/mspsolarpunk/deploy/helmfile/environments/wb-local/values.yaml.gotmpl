@@ -1,0 +1,15 @@
+# No cloudflared locally (helmfile.yaml.gotmpl skips the release entirely for
+# wb-local). The prepare hook builds services/web into an image and
+# `kind load`s it, so nothing is pulled from a registry; kind's
+# extraPortMappings (kind-cluster.yaml) forward host port 6174 to this
+# NodePort.
+image:
+  web:
+    repository: mspsolarpunk-web
+    tag: local
+    pullPolicy: Never
+
+web:
+  service:
+    type: NodePort
+    nodePort: 30080

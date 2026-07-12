@@ -1,0 +1,10 @@
+image:
+  repository: {{ .Values.image.web.repository }}
+  tag: {{ .Values.image.web.tag | quote }}
+  pullPolicy: {{ .Values.image.web.pullPolicy | quote }}
+
+resources:
+  {{- toYaml .Values.resources.web | nindent 2 }}
+
+service:
+  {{- toYaml .Values.web.service | nindent 2 }}

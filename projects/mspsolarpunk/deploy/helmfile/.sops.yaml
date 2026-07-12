@@ -1,0 +1,11 @@
+# SOPS creation rules for this helmfile's secrets.
+#
+# Any file matching the path_regex below is encrypted to the age recipient(s)
+# listed here. Encrypted files ARE committed (only ciphertext leaves the machine);
+# plaintext must never be committed. Decrypt/edit with `sops <file>`.
+#
+# Same operator/recipient as collabornet/deploy/helmfile/.sops.yaml — this is a
+# public age recipient, safe to duplicate across projects.
+creation_rules:
+  - path_regex: environments/.*/secrets/.*\.ya?ml$
+    age: age1huxz79cghdf0ewq6mq78pu3wuzyfhdr8qlw45tlqt74xrqt6t3es8k0zw0

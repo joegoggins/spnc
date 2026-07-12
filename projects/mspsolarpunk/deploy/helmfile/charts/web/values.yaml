@@ -1,0 +1,13 @@
+# Defaults; real values come from charts/web/values.yaml.gotmpl (helmfile).
+replicaCount: 1
+
+image:
+  repository: ghcr.io/joegoggins/mspsolarpunk-web
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+resources: {}
+
+service:
+  type: ClusterIP
+  nodePort: null

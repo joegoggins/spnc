@@ -1,0 +1,37 @@
+environments:
+{{ readFile "environments.yaml.gotmpl" | fromYaml | toYaml | indent 2 }}
+---
+helmDefaults:
+  wait: true
+  timeout: 120
+
+templates:
+  appRelease:
+    namespace: "{{`{{ .Environment.Name }}`}}"
+    createNamespace: true
+    values:
+      - charts/{{`{{ .Release.Name }}`}}/values.yaml.gotmpl
+    hooks:
+      - events: ["prepare"]
+        showlogs: true
+        command: ./helmfile-hook-commands/ensure-kubectl-context-is-ok-for-env.sh
+        args: ["{{`{{ .Environment.Name }}`}}"]
+
+releases:
+{{- if ne .Environment.Name "wb-local" }}
+  # cloudflared — the only HTTPS ingress into the cluster. wb-staging serves
+  # japoofis.com from the gaia cluster; wb-prod serves mspsolarpunk.com from
+  # hope-island — each its own tunnel (see README "Later"). wb-local skips
+  # this entirely: kind's extraPortMappings + a NodePort Service on `web`
+  # expose the site directly on the host.
+  - name: cloudflared
+    chart: charts/cloudflared
+    inherit:
+      - template: appRelease
+{{- end }}
+
+  # web — the static site (plain HTML/CSS behind nginx). Runs in every env.
+  - name: web
+    chart: charts/web
+    inherit:
+      - template: appRelease

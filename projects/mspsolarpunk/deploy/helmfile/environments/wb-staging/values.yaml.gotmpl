@@ -1,0 +1,13 @@
+# wb-staging = the japoofis.com box (kube-context "gaia") — the same physical
+# cluster collabornet's sp-staging runs on, but its own namespace + its own
+# cloudflared tunnel (see README "Later").
+cloudflared:
+  ingress:
+    - hostname: japoofis.com
+      service: http://web.{{ .Environment.Name }}.svc.cluster.local:80
+
+# Track the tip of main: CI pushes a moving `deploy-main` tag on every main
+# commit touching services/web/**. Overrides the pinned default (globals).
+image:
+  web:
+    tag: deploy-main
