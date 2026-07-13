@@ -10,7 +10,7 @@ walkthrough (sops/age setup, GHCR PAT secrets, etc.). This one stays brief.
 
 | env        | cluster ctx    | namespace  | public URL              | cloudflared      |
 |------------|----------------|------------|--------------------------|------------------|
-| wb-local   | kind-wb-local  | wb-local   | http://localhost:6174    | none — NodePort  |
+| wb-local   | kind-wb-local  | wb-local   | http://localhost:6173    | none — NodePort  |
 | wb-staging | gaia           | wb-staging | https://japoofis.com     | own tunnel       |
 | wb-prod    | hope-island    | wb-prod    | https://mspsolarpunk.com | own tunnel       |
 
@@ -29,7 +29,7 @@ deploys — see the `prepare` hook in `helmfile-hook-commands/`.
 ```sh
 cd projects/mspsolarpunk/deploy/helmfile
 helmfile -e wb-local apply
-open http://localhost:6174
+open http://localhost:6173
 ```
 
 Teardown: `kind delete cluster --name wb-local`

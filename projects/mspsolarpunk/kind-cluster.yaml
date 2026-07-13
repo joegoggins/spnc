@@ -3,10 +3,10 @@ apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
   # extraPortMappings forwards the host port straight to the NodePort Service
   # (environments/wb-local/values.yaml.gotmpl), so `helmfile -e wb-local apply`
-  # alone makes the site reachable at http://localhost:6174 — no Tilt/port-forward
+  # alone makes the site reachable at http://localhost:6173 — no Tilt/port-forward
   # process required (unlike collabornet's sp-local).
   - role: control-plane
     extraPortMappings:
       - containerPort: 30080
-        hostPort: 6174
+        hostPort: 6173
         protocol: TCP
