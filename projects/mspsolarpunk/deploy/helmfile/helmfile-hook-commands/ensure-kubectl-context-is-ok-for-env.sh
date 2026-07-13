@@ -28,6 +28,10 @@ case "$ENV_NAME" in
     kind export kubeconfig --name wb-local
     docker build -t mspsolarpunk-web:local "$PROJECT_ROOT/services/web"
     kind load docker-image mspsolarpunk-web:local --name wb-local
+    # Same tag every build, so helmfile's own diff sees no manifest change and
+    # won't roll the pod on its own — force it so edits under services/web
+    # actually show up. `|| true`: no-op before the release's first install.
+    kubectl -n wb-local rollout restart deployment/web 2>/dev/null || true
     ok
     ;;
   wb-staging)
