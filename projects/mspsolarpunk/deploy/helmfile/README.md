@@ -65,6 +65,20 @@ DNS (one-time):
 `mspsolarpunk.com` for wb-prod) — a proxied apex record to
 `<uuid>.cfargotunnel.com`.
 
+> **Gotcha — two zones, one cert:** `route dns` picks the zone from whichever
+> zone `~/.cloudflared/cert.pem` is currently scoped to (from the last
+> `cloudflared tunnel login`), *not* from the hostname you pass it. Since this
+> project spans two zones (japoofis.com, mspsolarpunk.com), the wrong active
+> cert makes it silently create `mspsolarpunk.com.japoofis.com` (or the
+> reverse) instead of erroring. Keep one cert per zone and pass it explicitly:
+> ```sh
+> cloudflared tunnel login   # pick the zone in the browser, then:
+> cp ~/.cloudflared/cert.pem ~/.cloudflared/cert-<zone>.pem
+> cloudflared tunnel route dns --origincert ~/.cloudflared/cert-japoofis.pem <uuid> japoofis.com
+> cloudflared tunnel route dns --origincert ~/.cloudflared/cert-mspsolarpunk.pem <uuid> mspsolarpunk.com
+> ```
+> If you skip this, double check the record landed in the right zone in the
+> dashboard before moving on.
 
 Deploy:
 

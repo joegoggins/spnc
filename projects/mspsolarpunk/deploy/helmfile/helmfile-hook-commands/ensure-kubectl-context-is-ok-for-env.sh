@@ -33,7 +33,9 @@ case "$ENV_NAME" in
   wb-staging)
     [[ "$(kubectl config current-context)" == *"gaia"* ]] && ok || die ;;
   wb-prod)
-    [[ "$(kubectl config current-context)" == *"hope-island"* ]] && ok || die ;;
+    # hope-island is down/broken; gaia is a temporary stand-in until it's back.
+    ctx="$(kubectl config current-context)"
+    [[ "$ctx" == *"gaia"* || "$ctx" == *"hope-island"* ]] && ok || die ;;
   *)
     echo "Unknown env '$ENV_NAME'"; exit 1 ;;
 esac
