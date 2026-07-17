@@ -8,11 +8,16 @@ image:
     tag: "2025.6.1"
   web:
     # Public GHCR package — no imagePullSecret needed. wb-local overrides all
-    # three fields to build+load the image locally instead (see
+    # three fields to build+load the image locally instead of pulling (see
     # environments/wb-local/values.yaml.gotmpl).
     repository: ghcr.io/joegoggins/mspsolarpunk-web
-    tag: "0.1.0"
-    pullPolicy: IfNotPresent
+
+    # See the sha256id of what this branch points at here: https://github.com/joegoggins/spnc/pkgs/container/mspsolarpunk-web/1034877179?tag=deploy-main
+    # This should match what the containers.nginx.image_id shows on the web pod
+    #
+    # TODO(production hardening): wb-prod should be pinned to an immutable tag, staging can float
+    tag: deploy-main
+    pullPolicy: Always
 
 resources:
   cloudflared: { requests: { cpu: 25m, memory: 64Mi }, limits: {} }

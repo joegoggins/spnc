@@ -82,15 +82,19 @@ DNS (one-time):
 
 Deploy:
 
+
 ```sh
-export KUBECONFIG=~/.kube/gaia.yaml        # ~/.kube/hope-island.yaml for wb-prod
+export KUBECONFIG=~/.kube/gaia.yaml
 export SOPS_AGE_KEY_FILE=$HOME/.config/sops/age/keys.txt
 helmfile -e wb-staging diff                # or -e wb-prod
 helmfile -e wb-staging apply
 ```
 
+## Deploy software change:
 
+Make a software change, push it github, wait for CI to finish the build, then:
 
+`kubectl rollout restart deploy/web -n wb-staging`
 
 
 # Later

@@ -4,8 +4,3 @@ cloudflared:
   ingress:
     - hostname: mspsolarpunk.com
       service: http://web.{{ .Environment.Name }}.svc.cluster.local:80
-
-# First pass: track main like wb-staging (no promotion gate yet).
-image:
-  web:
-    tag: deploy-main
